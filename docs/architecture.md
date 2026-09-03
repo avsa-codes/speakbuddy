@@ -123,3 +123,26 @@ User → Match → Topic → Session → Voice/Video + Chat → End Session → 
 ### Group Discussion
 
 Create/Join Room → Topic → Participants → Voice/Video + Chat → End Session → History
+
+
+
+### Important Commands 
+
+npm install -D eslint @eslint/js typescript-eslint prettier eslint-config-prettier
+
+eslint → code-quality/linting engine
+@eslint/js → recommended JavaScript rules
+typescript-eslint → makes ESLint understand TypeScript
+prettier → automatic code formatting
+eslint-config-prettier → prevents ESLint and Prettier rules from fighting each other
+
+npm install -D --save-exact prettier
+
+## Prisma Commands 
+
+npm install @prisma/client
+npm install -D prisma
+npx prisma init 
+npx prisma orm init --yes --target postgres --authoring psl
+npx prisma orm init --yes --target postgres --authoring psl --confirm backend
+npx prisma contract emit
