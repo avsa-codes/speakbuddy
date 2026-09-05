@@ -1,21 +1,127 @@
 // use prisma-next
 
+//models
+
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  username  String?
-  name      String?
-  posts     Post[]
-  createdAt TimestamptzString @default(now())
-  updatedAt temporal.updatedAtString()
+  id String @id @default(uuid())
+  email               String            @unique
+  username            String?           @unique
+  name                String?
+  password            String
+  isEmailVerified     Boolean           @default(false)
+  bio                 String?
+  interests           String[]
+  languageProficiency LanguageProficiency
+  rating              Float               @default(0)
+  totalRatings        Int               @default(0)
+  isDeleted           Boolean           @default(false)
+
+  ratingsGiven Rating[] @relation("RatingsGiven")
+  ratingsReceived Rating[] @relation("RatingsReceived")
+  conversationsAsUser1 Conversation[] @relation("User1Conversations")
+  conversationsAsUser2 Conversation[] @relation("User2Conversations")
+  groupParticipants GroupParticipant[]
+
+  createdAt           TimestamptzString @default(now())
+  updatedAt           temporal.updatedAtString()
 }
 
-model Post {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String?
-  author    User     @relation(fields: [authorId], references: [id])
-  authorId  Int
-  createdAt TimestamptzString @default(now())
-  updatedAt temporal.updatedAtString()
+model Rating {
+  id String @id @default(uuid())
+  rating          Int  
+  reviewerId      String
+  reviewedUserId  String
+
+  reviewer User @relation("RatingsGiven", fields: [reviewerId], references: [id])
+  reviewedUser User @relation("RatingsReceived", fields: [reviewedUserId], references: [id])
+
+  createdAt       TimestamptzString @default(now())
+
+  @@index([reviewerId])
+  @@index([reviewedUserId])
+}
+
+model Conversation {
+  id String @id @default(uuid())
+  user1Id         String
+  user2Id         String
+  topicId         String
+  status          SessionStatus
+  startedAt       TimestamptzString?
+  endedAt         TimestamptzString?
+  duration        Int?
+
+  topic Topic @relation(fields: [topicId], references: [id])
+  user1 User @relation("User1Conversations", fields: [user1Id], references: [id])
+  user2 User @relation("User2Conversations", fields: [user2Id], references: [id])
+
+  createdAt       TimestamptzString @default(now())
+
+  @@index([user1Id])
+  @@index([user2Id])
+  @@index([topicId])
+  @@index([status])
+}
+
+model Topic {
+  id String @id @default(uuid())
+  title           String  
+  description     String 
+
+  conversations Conversation[]
+  groupDiscussions GroupDiscussion[]
+
+  createdAt       TimestamptzString @default(now())
+  updatedAt       temporal.updatedAtString()
+}
+
+model GroupDiscussion {
+  id String @id @default(uuid())
+  topicId         String
+  maxParticipants Int
+  status          SessionStatus
+  startedAt       TimestamptzString?
+  endedAt         TimestamptzString?
+  duration        Int?
+
+  topic Topic @relation(fields: [topicId], references: [id])
+  groupParticipants GroupParticipant[]
+
+
+  createdAt       TimestamptzString @default(now())
+  updatedAt       temporal.updatedAtString()
+
+  @@index([topicId])
+  @@index([status])
+}
+
+model GroupParticipant {
+  id String @id @default(uuid())
+  groupDiscussionId String
+  userId            String
+  joinedAt          TimestamptzString
+  leftAt            TimestamptzString?
+
+  user User @relation(fields: [userId], references: [id])
+  groupDiscussion GroupDiscussion @relation(fields: [groupDiscussionId], references: [id])
+
+  @@unique([userId, groupDiscussionId])
+}
+
+//enums
+
+enum SessionStatus {
+  WAITING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum LanguageProficiency {
+  BEGINNER
+  ELEMENTARY
+  INTERMEDIATE
+  UPPER_INTERMEDIATE
+  ADVANCED
+  PROFICIENT
 }
