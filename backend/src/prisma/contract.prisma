@@ -3,80 +3,131 @@
 //models
 
 model User {
+
   id String @id @default(uuid())
+
   email               String            @unique
-  username            String?           @unique
-  name                String?
+  username            String            @unique
+  name                String
   password            String
   isEmailVerified     Boolean           @default(false)
   bio                 String?
-  interests           String[]
-  languageProficiency LanguageProficiency
-  rating              Float               @default(0)
-  totalRatings        Int               @default(0)
+  interests           String[]?
+  languageProficiency LanguageProficiency?
+  rating              Float?            @default(0)
+  totalRatings        Int?              @default(0)
   isDeleted           Boolean           @default(false)
 
-  ratingsGiven Rating[] @relation("RatingsGiven")
-  ratingsReceived Rating[] @relation("RatingsReceived")
-  conversationsAsUser1 Conversation[] @relation("User1Conversations")
-  conversationsAsUser2 Conversation[] @relation("User2Conversations")
-  groupParticipants GroupParticipant[]
+  ratingsGiven        Rating[]          @relation("RatingsGiven")
+  ratingsReceived     Rating[]          @relation("RatingsReceived")
+  conversationsAsUser1 Conversation[]   @relation("User1Conversations")
+  conversationsAsUser2 Conversation[]   @relation("User2Conversations")
+  groupParticipants   GroupParticipant[]
 
-  createdAt           TimestamptzString @default(now())
-  updatedAt           temporal.updatedAtString()
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+
+  @@check(
+    expression: "rating >= 0 AND rating <= 5",
+    name: "user_rating_range_check"
+  )
+
+  @@check(
+    expression: "\"totalRatings\" >= 0",
+    name: "user_total_ratings_non_negative_check"
+  )
 }
 
+
 model Rating {
+
   id String @id @default(uuid())
-  rating          Int  
-  reviewerId      String
-  reviewedUserId  String
 
-  reviewer User @relation("RatingsGiven", fields: [reviewerId], references: [id])
-  reviewedUser User @relation("RatingsReceived", fields: [reviewedUserId], references: [id])
+  rating         Int
+  reviewerId     String
+  reviewedUserId String
 
-  createdAt       TimestamptzString @default(now())
+  reviewer User @relation("RatingsGiven", fields: [reviewerId], references: [id], onDelete: Restrict)
+  reviewedUser User @relation("RatingsReceived", fields: [reviewedUserId], references: [id], onDelete: Restrict)
+
+  createdAt TimestamptzString @default(now())
 
   @@index([reviewerId])
   @@index([reviewedUserId])
+  @@unique([reviewerId, reviewedUserId])
+
+  @@check(
+    expression: "rating >= 1 AND rating <= 5",
+    name: "rating_rating_range_check"
+  )
+
+  @@check(
+    expression: "\"reviewerId\" <> \"reviewedUserId\"",
+    name: "rating_no_self_rating_check"
+  )
 }
 
+
 model Conversation {
+
   id String @id @default(uuid())
-  user1Id         String
-  user2Id         String
-  topicId         String
-  status          SessionStatus
-  startedAt       TimestamptzString?
-  endedAt         TimestamptzString?
-  duration        Int?
 
-  topic Topic @relation(fields: [topicId], references: [id])
-  user1 User @relation("User1Conversations", fields: [user1Id], references: [id])
-  user2 User @relation("User2Conversations", fields: [user2Id], references: [id])
+  user1Id String
+  user2Id String
+  topicId String
+  status SessionStatus
 
-  createdAt       TimestamptzString @default(now())
+  startedAt TimestamptzString?
+  endedAt TimestamptzString?
+  duration Int?
+
+  topic Topic @relation(fields: [topicId], references: [id], onDelete: Restrict)
+  user1 User @relation("User1Conversations", fields: [user1Id], references: [id], onDelete: Restrict)
+  user2 User @relation("User2Conversations", fields: [user2Id], references: [id], onDelete: Restrict)
+
+  createdAt TimestamptzString @default(now())
 
   @@index([user1Id])
   @@index([user2Id])
   @@index([topicId])
   @@index([status])
+
+  @@check(
+    expression: "\"user1Id\" <> \"user2Id\"",
+    name: "conversation_no_self_conversation_check"
+  )
+
+  @@check(
+    expression: "duration >= 0",
+    name: "conversation_duration_non_negative_check"
+  )
+
+  @@check(
+    expression: "\"endedAt\" >= \"startedAt\"",
+    name: "conversation_valid_time_range_check"
+  )
 }
+
 
 model Topic {
-  id String @id @default(uuid())
-  title           String  
-  description     String 
 
-  conversations Conversation[]
+  id String @id @default(uuid())
+
+  title       String
+  description String
+
+  conversations   Conversation[]
   groupDiscussions GroupDiscussion[]
 
-  createdAt       TimestamptzString @default(now())
-  updatedAt       temporal.updatedAtString()
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
 }
 
+
 model GroupDiscussion {
+
   id String @id @default(uuid())
+
   topicId         String
   maxParticipants Int
   status          SessionStatus
@@ -84,28 +135,50 @@ model GroupDiscussion {
   endedAt         TimestamptzString?
   duration        Int?
 
-  topic Topic @relation(fields: [topicId], references: [id])
+  topic Topic @relation(fields: [topicId], references: [id], onDelete: Restrict)
   groupParticipants GroupParticipant[]
 
-
-  createdAt       TimestamptzString @default(now())
-  updatedAt       temporal.updatedAtString()
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
 
   @@index([topicId])
   @@index([status])
+
+  @@check(
+    expression: "\"maxParticipants\" > 0",
+    name: "group_discussion_max_participants_positive_check"
+  )
+
+  @@check(
+    expression: "duration >= 0",
+    name: "group_discussion_duration_non_negative_check"
+  )
+
+  @@check(
+    expression: "\"endedAt\" >= \"startedAt\"",
+    name: "group_discussion_valid_time_range_check"
+  )
 }
 
+
 model GroupParticipant {
+
   id String @id @default(uuid())
+
   groupDiscussionId String
   userId            String
   joinedAt          TimestamptzString
   leftAt            TimestamptzString?
 
-  user User @relation(fields: [userId], references: [id])
-  groupDiscussion GroupDiscussion @relation(fields: [groupDiscussionId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  groupDiscussion GroupDiscussion @relation(fields: [groupDiscussionId], references: [id], onDelete: Cascade)
 
   @@unique([userId, groupDiscussionId])
+
+  @@check(
+    expression: "\"leftAt\" >= \"joinedAt\"",
+    name: "group_participant_valid_time_range_check"
+  )
 }
 
 //enums

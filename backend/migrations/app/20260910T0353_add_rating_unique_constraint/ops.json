@@ -1,0 +1,44 @@
+[
+  {
+    "id": "unique.rating.rating_reviewerId_reviewedUserId_key",
+    "label": "Add unique constraint on \"rating\" (reviewerId, reviewedUserId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "rating_reviewerId_reviewedUserId_key",
+        "table": "rating"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"rating_reviewerId_reviewedUserId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "rating_reviewerId_reviewedUserId_key",
+          "public",
+          "\"public\".\"rating\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"rating_reviewerId_reviewedUserId_key\"",
+        "sql": "ALTER TABLE \"public\".\"rating\" ADD CONSTRAINT \"rating_reviewerId_reviewedUserId_key\" UNIQUE (\"reviewerId\", \"reviewedUserId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"rating_reviewerId_reviewedUserId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "rating_reviewerId_reviewedUserId_key",
+          "public",
+          "\"public\".\"rating\""
+        ]
+      }
+    ]
+  }
+]

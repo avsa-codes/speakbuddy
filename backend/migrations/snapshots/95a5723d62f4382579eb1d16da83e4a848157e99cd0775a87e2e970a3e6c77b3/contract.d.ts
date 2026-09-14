@@ -33,7 +33,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'7d952ef4cc940f8304a324e5f1e5cff04b74de041fdd59550da15b714b2b634b'>;
+  StorageHashBase<'95a5723d62f4382579eb1d16da83e4a848157e99cd0775a87e2e970a3e6c77b3'>;
 export type ExecutionHash =
   ExecutionHashBase<'abc258c1e537e06409ac342101c62ed883ebc131afbb03a2e143700edb69a010'>;
 export type ProfileHash =
@@ -287,21 +287,22 @@ export type FieldOutputTypes = {
     readonly User: {
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly email: CodecTypes['pg/text@1']['output'];
-      readonly username: CodecTypes['pg/text@1']['output'] | null;
-      readonly name: CodecTypes['pg/text@1']['output'] | null;
+      readonly username: CodecTypes['pg/text@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'];
       readonly password: CodecTypes['pg/text@1']['output'];
       readonly isEmailVerified: CodecTypes['pg/bool@1']['output'];
       readonly bio: CodecTypes['pg/text@1']['output'] | null;
-      readonly interests: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
+      readonly interests: ReadonlyArray<CodecTypes['pg/text@1']['output']> | null;
       readonly languageProficiency:
         | 'BEGINNER'
         | 'ELEMENTARY'
         | 'INTERMEDIATE'
         | 'UPPER_INTERMEDIATE'
         | 'ADVANCED'
-        | 'PROFICIENT';
-      readonly rating: CodecTypes['pg/float8@1']['output'];
-      readonly totalRatings: CodecTypes['pg/int4@1']['output'];
+        | 'PROFICIENT'
+        | null;
+      readonly rating: CodecTypes['pg/float8@1']['output'] | null;
+      readonly totalRatings: CodecTypes['pg/int4@1']['output'] | null;
       readonly isDeleted: CodecTypes['pg/bool@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -356,21 +357,22 @@ export type FieldInputTypes = {
     readonly User: {
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly email: CodecTypes['pg/text@1']['input'];
-      readonly username: CodecTypes['pg/text@1']['input'] | null;
-      readonly name: CodecTypes['pg/text@1']['input'] | null;
+      readonly username: CodecTypes['pg/text@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'];
       readonly password: CodecTypes['pg/text@1']['input'];
       readonly isEmailVerified: CodecTypes['pg/bool@1']['input'];
       readonly bio: CodecTypes['pg/text@1']['input'] | null;
-      readonly interests: ReadonlyArray<CodecTypes['pg/text@1']['input']>;
+      readonly interests: ReadonlyArray<CodecTypes['pg/text@1']['input']> | null;
       readonly languageProficiency:
         | 'BEGINNER'
         | 'ELEMENTARY'
         | 'INTERMEDIATE'
         | 'UPPER_INTERMEDIATE'
         | 'ADVANCED'
-        | 'PROFICIENT';
-      readonly rating: CodecTypes['pg/float8@1']['input'];
-      readonly totalRatings: CodecTypes['pg/int4@1']['input'];
+        | 'PROFICIENT'
+        | null;
+      readonly rating: CodecTypes['pg/float8@1']['input'] | null;
+      readonly totalRatings: CodecTypes['pg/int4@1']['input'] | null;
       readonly isDeleted: CodecTypes['pg/bool@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
@@ -427,7 +429,7 @@ export type StorageColumnTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly email: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
-      readonly interests: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
+      readonly interests: ReadonlyArray<CodecTypes['pg/text@1']['output']> | null;
       readonly isDeleted: CodecTypes['pg/bool@1']['output'];
       readonly isEmailVerified: CodecTypes['pg/bool@1']['output'];
       readonly languageProficiency:
@@ -436,13 +438,14 @@ export type StorageColumnTypes = {
         | 'INTERMEDIATE'
         | 'UPPER_INTERMEDIATE'
         | 'ADVANCED'
-        | 'PROFICIENT';
-      readonly name: CodecTypes['pg/text@1']['output'] | null;
+        | 'PROFICIENT'
+        | null;
+      readonly name: CodecTypes['pg/text@1']['output'];
       readonly password: CodecTypes['pg/text@1']['output'];
-      readonly rating: CodecTypes['pg/float8@1']['output'];
-      readonly totalRatings: CodecTypes['pg/int4@1']['output'];
+      readonly rating: CodecTypes['pg/float8@1']['output'] | null;
+      readonly totalRatings: CodecTypes['pg/int4@1']['output'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
-      readonly username: CodecTypes['pg/text@1']['output'] | null;
+      readonly username: CodecTypes['pg/text@1']['output'];
     };
   };
 };
@@ -496,7 +499,7 @@ export type StorageColumnInputTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly email: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
-      readonly interests: ReadonlyArray<CodecTypes['pg/text@1']['input']>;
+      readonly interests: ReadonlyArray<CodecTypes['pg/text@1']['input']> | null;
       readonly isDeleted: CodecTypes['pg/bool@1']['input'];
       readonly isEmailVerified: CodecTypes['pg/bool@1']['input'];
       readonly languageProficiency:
@@ -505,13 +508,14 @@ export type StorageColumnInputTypes = {
         | 'INTERMEDIATE'
         | 'UPPER_INTERMEDIATE'
         | 'ADVANCED'
-        | 'PROFICIENT';
-      readonly name: CodecTypes['pg/text@1']['input'] | null;
+        | 'PROFICIENT'
+        | null;
+      readonly name: CodecTypes['pg/text@1']['input'];
       readonly password: CodecTypes['pg/text@1']['input'];
-      readonly rating: CodecTypes['pg/float8@1']['input'];
-      readonly totalRatings: CodecTypes['pg/int4@1']['input'];
+      readonly rating: CodecTypes['pg/float8@1']['input'] | null;
+      readonly totalRatings: CodecTypes['pg/int4@1']['input'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
-      readonly username: CodecTypes['pg/text@1']['input'] | null;
+      readonly username: CodecTypes['pg/text@1']['input'];
     };
   };
 };
@@ -921,12 +925,12 @@ type ContractBase = Omit<
                 readonly username: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
-                  readonly nullable: true;
+                  readonly nullable: false;
                 };
                 readonly name: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
-                  readonly nullable: true;
+                  readonly nullable: false;
                 };
                 readonly password: {
                   readonly nativeType: 'text';
@@ -950,17 +954,17 @@ type ContractBase = Omit<
                 readonly interests: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
+                  readonly nullable: true;
                 };
                 readonly languageProficiency: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
+                  readonly nullable: true;
                 };
                 readonly rating: {
                   readonly nativeType: 'float8';
                   readonly codecId: 'pg/float8@1';
-                  readonly nullable: false;
+                  readonly nullable: true;
                   readonly default: {
                     readonly kind: 'literal';
                     readonly value: DefaultLiteralValue<'pg/float8@1', 0>;
@@ -969,7 +973,7 @@ type ContractBase = Omit<
                 readonly totalRatings: {
                   readonly nativeType: 'int4';
                   readonly codecId: 'pg/int4@1';
-                  readonly nullable: false;
+                  readonly nullable: true;
                   readonly default: {
                     readonly kind: 'literal';
                     readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
@@ -1430,11 +1434,11 @@ type ContractBase = Omit<
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly username: {
-                readonly nullable: true;
+                readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly name: {
-                readonly nullable: true;
+                readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly password: {
@@ -1450,20 +1454,20 @@ type ContractBase = Omit<
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly interests: {
-                readonly nullable: false;
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
                 readonly many: true;
               };
               readonly languageProficiency: {
-                readonly nullable: false;
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly rating: {
-                readonly nullable: false;
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
               };
               readonly totalRatings: {
-                readonly nullable: false;
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
               readonly isDeleted: {

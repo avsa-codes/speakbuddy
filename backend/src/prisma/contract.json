@@ -684,7 +684,7 @@
               },
               "interests": {
                 "many": true,
-                "nullable": false,
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -705,7 +705,7 @@
                 }
               },
               "languageProficiency": {
-                "nullable": false,
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -718,7 +718,7 @@
                 }
               },
               "name": {
-                "nullable": true,
+                "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -732,14 +732,14 @@
                 }
               },
               "rating": {
-                "nullable": false,
+                "nullable": true,
                 "type": {
                   "codecId": "pg/float8@1",
                   "kind": "scalar"
                 }
               },
               "totalRatings": {
-                "nullable": false,
+                "nullable": true,
                 "type": {
                   "codecId": "pg/int4@1",
                   "kind": "scalar"
@@ -753,7 +753,7 @@
                 }
               },
               "username": {
-                "nullable": true,
+                "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -898,9 +898,24 @@
             "conversation": {
               "checks": [
                 {
+                  "expression": "duration >= 0",
+                  "name": "conversation_duration_non_negative_check_d99cb446",
+                  "prefix": "conversation_duration_non_negative_check"
+                },
+                {
+                  "expression": "\"user1Id\" <> \"user2Id\"",
+                  "name": "conversation_no_self_conversation_check_19b24f66",
+                  "prefix": "conversation_no_self_conversation_check"
+                },
+                {
                   "expression": "\"status\" IN ('WAITING', 'ACTIVE', 'COMPLETED', 'CANCELLED')",
                   "name": "conversation_status_check_1f356f23",
                   "prefix": "conversation_status_check"
+                },
+                {
+                  "expression": "\"endedAt\" >= \"startedAt\"",
+                  "name": "conversation_valid_time_range_check_3308ff50",
+                  "prefix": "conversation_valid_time_range_check"
                 }
               ],
               "columns": {
@@ -962,6 +977,7 @@
               },
               "foreignKeys": [
                 {
+                  "onDelete": "restrict",
                   "source": {
                     "columns": [
                       "topicId"
@@ -978,6 +994,7 @@
                   }
                 },
                 {
+                  "onDelete": "restrict",
                   "source": {
                     "columns": [
                       "user1Id"
@@ -994,6 +1011,7 @@
                   }
                 },
                 {
+                  "onDelete": "restrict",
                   "source": {
                     "columns": [
                       "user2Id"
@@ -1057,6 +1075,21 @@
                   "expression": "\"status\" IN ('WAITING', 'ACTIVE', 'COMPLETED', 'CANCELLED')",
                   "name": "groupDiscussion_status_check_1f356f23",
                   "prefix": "groupDiscussion_status_check"
+                },
+                {
+                  "expression": "duration >= 0",
+                  "name": "group_discussion_duration_non_negative_check_d99cb446",
+                  "prefix": "group_discussion_duration_non_negative_check"
+                },
+                {
+                  "expression": "\"maxParticipants\" > 0",
+                  "name": "group_discussion_max_participants_positive_check_b7b64f10",
+                  "prefix": "group_discussion_max_participants_positive_check"
+                },
+                {
+                  "expression": "\"endedAt\" >= \"startedAt\"",
+                  "name": "group_discussion_valid_time_range_check_3308ff50",
+                  "prefix": "group_discussion_valid_time_range_check"
                 }
               ],
               "columns": {
@@ -1118,6 +1151,7 @@
               },
               "foreignKeys": [
                 {
+                  "onDelete": "restrict",
                   "source": {
                     "columns": [
                       "topicId"
@@ -1160,6 +1194,13 @@
               "uniques": []
             },
             "groupParticipant": {
+              "checks": [
+                {
+                  "expression": "\"leftAt\" >= \"joinedAt\"",
+                  "name": "group_participant_valid_time_range_check_85679688",
+                  "prefix": "group_participant_valid_time_range_check"
+                }
+              ],
               "columns": {
                 "groupDiscussionId": {
                   "codecId": "pg/text@1",
@@ -1189,6 +1230,7 @@
               },
               "foreignKeys": [
                 {
+                  "onDelete": "restrict",
                   "source": {
                     "columns": [
                       "userId"
@@ -1205,6 +1247,7 @@
                   }
                 },
                 {
+                  "onDelete": "cascade",
                   "source": {
                     "columns": [
                       "groupDiscussionId"
@@ -1254,6 +1297,18 @@
               ]
             },
             "rating": {
+              "checks": [
+                {
+                  "expression": "\"reviewerId\" <> \"reviewedUserId\"",
+                  "name": "rating_no_self_rating_check_0ea4c0dd",
+                  "prefix": "rating_no_self_rating_check"
+                },
+                {
+                  "expression": "rating >= 1 AND rating <= 5",
+                  "name": "rating_rating_range_check_a517f074",
+                  "prefix": "rating_rating_range_check"
+                }
+              ],
               "columns": {
                 "createdAt": {
                   "codecId": "pg/timestamptz-string@1",
@@ -1287,6 +1342,7 @@
               },
               "foreignKeys": [
                 {
+                  "onDelete": "restrict",
                   "source": {
                     "columns": [
                       "reviewerId"
@@ -1303,6 +1359,7 @@
                   }
                 },
                 {
+                  "onDelete": "restrict",
                   "source": {
                     "columns": [
                       "reviewedUserId"
@@ -1342,7 +1399,14 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "reviewerId",
+                    "reviewedUserId"
+                  ]
+                }
+              ]
             },
             "topic": {
               "columns": {
@@ -1396,6 +1460,16 @@
                   "expression": "\"languageProficiency\" IN ('BEGINNER', 'ELEMENTARY', 'INTERMEDIATE', 'UPPER_INTERMEDIATE', 'ADVANCED', 'PROFICIENT')",
                   "name": "user_languageProficiency_check_9f8a2a3d",
                   "prefix": "user_languageProficiency_check"
+                },
+                {
+                  "expression": "rating >= 0 AND rating <= 5",
+                  "name": "user_rating_range_check_4dac77a4",
+                  "prefix": "user_rating_range_check"
+                },
+                {
+                  "expression": "\"totalRatings\" >= 0",
+                  "name": "user_total_ratings_non_negative_check_9b4f1fed",
+                  "prefix": "user_total_ratings_non_negative_check"
                 }
               ],
               "columns": {
@@ -1427,7 +1501,7 @@
                   "codecId": "pg/text@1",
                   "many": true,
                   "nativeType": "text",
-                  "nullable": false
+                  "nullable": true
                 },
                 "isDeleted": {
                   "codecId": "pg/bool@1",
@@ -1450,7 +1524,7 @@
                 "languageProficiency": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": false,
+                  "nullable": true,
                   "valueSet": {
                     "entityKind": "valueSet",
                     "entityName": "LanguageProficiency",
@@ -1461,7 +1535,7 @@
                 "name": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": true
+                  "nullable": false
                 },
                 "password": {
                   "codecId": "pg/text@1",
@@ -1475,7 +1549,7 @@
                     "value": 0
                   },
                   "nativeType": "float8",
-                  "nullable": false
+                  "nullable": true
                 },
                 "totalRatings": {
                   "codecId": "pg/int4@1",
@@ -1484,7 +1558,7 @@
                     "value": 0
                   },
                   "nativeType": "int4",
-                  "nullable": false
+                  "nullable": true
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-string@1",
@@ -1494,7 +1568,7 @@
                 "username": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": true
+                  "nullable": false
                 }
               },
               "foreignKeys": [],
@@ -1545,7 +1619,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "7d952ef4cc940f8304a324e5f1e5cff04b74de041fdd59550da15b714b2b634b"
+    "storageHash": "6939203e0973f1a0c6199a936bb1bab3d9bd27d4a64486cc5cce620ede802c25"
   },
   "execution": {
     "executionHash": "abc258c1e537e06409ac342101c62ed883ebc131afbb03a2e143700edb69a010",
