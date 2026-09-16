@@ -1,0 +1,407 @@
+[
+  {
+    "id": "table.groupReservation",
+    "label": "Create table \"groupReservation\"",
+    "summary": "Creates table \"groupReservation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "groupReservation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"groupReservation\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"groupReservation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"groupReservation\"",
+        "sql": "CREATE TABLE \"public\".\"groupReservation\" (\n  \"cancelledAt\" timestamptz,\n  \"confirmedAt\" timestamptz,\n  \"groupDiscussionId\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"reservedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"status\" text NOT NULL,\n  \"userId\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"groupReservation_status_check_6d3a3bcb\" CHECK (\"status\" IN ('RESERVED', 'CONFIRMED', 'CANCELLED', 'EXPIRED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"groupReservation\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"groupReservation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.groupDiscussion.scheduledStartAt",
+    "label": "Add column \"scheduledStartAt\" to \"groupDiscussion\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "scheduledStartAt",
+        "table": "groupDiscussion"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"scheduledStartAt\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "groupDiscussion",
+          "scheduledStartAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"scheduledStartAt\"",
+        "sql": "ALTER TABLE \"public\".\"groupDiscussion\" ADD COLUMN \"scheduledStartAt\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"scheduledStartAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "groupDiscussion",
+          "scheduledStartAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.user.profilePhoto",
+    "label": "Add column \"profilePhoto\" to \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "profilePhoto",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"profilePhoto\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "profilePhoto"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"profilePhoto\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD COLUMN \"profilePhoto\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"profilePhoto\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "profilePhoto"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.groupReservation.groupReservation_userId_groupDiscussionId_key",
+    "label": "Add unique constraint on \"groupReservation\" (userId, groupDiscussionId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "groupReservation_userId_groupDiscussionId_key",
+        "table": "groupReservation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"groupReservation_userId_groupDiscussionId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "groupReservation_userId_groupDiscussionId_key",
+          "public",
+          "\"public\".\"groupReservation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"groupReservation_userId_groupDiscussionId_key\"",
+        "sql": "ALTER TABLE \"public\".\"groupReservation\" ADD CONSTRAINT \"groupReservation_userId_groupDiscussionId_key\" UNIQUE (\"userId\", \"groupDiscussionId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"groupReservation_userId_groupDiscussionId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "groupReservation_userId_groupDiscussionId_key",
+          "public",
+          "\"public\".\"groupReservation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.groupDiscussion.groupDiscussion_scheduledStartAt_idx_16bf47c9",
+    "label": "Create index \"groupDiscussion_scheduledStartAt_idx_16bf47c9\" on \"groupDiscussion\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "groupDiscussion_scheduledStartAt_idx_16bf47c9",
+        "table": "groupDiscussion"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"groupDiscussion_scheduledStartAt_idx_16bf47c9\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"groupDiscussion_scheduledStartAt_idx_16bf47c9\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"groupDiscussion_scheduledStartAt_idx_16bf47c9\"",
+        "sql": "CREATE INDEX \"groupDiscussion_scheduledStartAt_idx_16bf47c9\" ON \"public\".\"groupDiscussion\" (\"scheduledStartAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"groupDiscussion_scheduledStartAt_idx_16bf47c9\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"groupDiscussion_scheduledStartAt_idx_16bf47c9\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.groupReservation.groupReservation_groupDiscussionId_idx_772d1f81",
+    "label": "Create index \"groupReservation_groupDiscussionId_idx_772d1f81\" on \"groupReservation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "groupReservation_groupDiscussionId_idx_772d1f81",
+        "table": "groupReservation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"groupReservation_groupDiscussionId_idx_772d1f81\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"groupReservation_groupDiscussionId_idx_772d1f81\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"groupReservation_groupDiscussionId_idx_772d1f81\"",
+        "sql": "CREATE INDEX \"groupReservation_groupDiscussionId_idx_772d1f81\" ON \"public\".\"groupReservation\" (\"groupDiscussionId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"groupReservation_groupDiscussionId_idx_772d1f81\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"groupReservation_groupDiscussionId_idx_772d1f81\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.groupReservation.groupReservation_status_idx_e98638ab",
+    "label": "Create index \"groupReservation_status_idx_e98638ab\" on \"groupReservation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "groupReservation_status_idx_e98638ab",
+        "table": "groupReservation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"groupReservation_status_idx_e98638ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"groupReservation_status_idx_e98638ab\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"groupReservation_status_idx_e98638ab\"",
+        "sql": "CREATE INDEX \"groupReservation_status_idx_e98638ab\" ON \"public\".\"groupReservation\" (\"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"groupReservation_status_idx_e98638ab\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"groupReservation_status_idx_e98638ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.groupReservation.groupReservation_userId_idx_a489d58a",
+    "label": "Create index \"groupReservation_userId_idx_a489d58a\" on \"groupReservation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "groupReservation_userId_idx_a489d58a",
+        "table": "groupReservation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"groupReservation_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"groupReservation_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"groupReservation_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"groupReservation_userId_idx_a489d58a\" ON \"public\".\"groupReservation\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"groupReservation_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"groupReservation_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.groupReservation.groupReservation_userId_fkey",
+    "label": "Add foreign key \"groupReservation_userId_fkey\" on \"groupReservation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "groupReservation_userId_fkey",
+        "table": "groupReservation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"groupReservation_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "groupReservation_userId_fkey",
+          "public",
+          "\"public\".\"groupReservation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"groupReservation_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"groupReservation\"\nADD CONSTRAINT \"groupReservation_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"user\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"groupReservation_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "groupReservation_userId_fkey",
+          "public",
+          "\"public\".\"groupReservation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.groupReservation.groupReservation_groupDiscussionId_fkey",
+    "label": "Add foreign key \"groupReservation_groupDiscussionId_fkey\" on \"groupReservation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "groupReservation_groupDiscussionId_fkey",
+        "table": "groupReservation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"groupReservation_groupDiscussionId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "groupReservation_groupDiscussionId_fkey",
+          "public",
+          "\"public\".\"groupReservation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"groupReservation_groupDiscussionId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"groupReservation\"\nADD CONSTRAINT \"groupReservation_groupDiscussionId_fkey\"\nFOREIGN KEY (\"groupDiscussionId\")\nREFERENCES \"public\".\"groupDiscussion\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"groupReservation_groupDiscussionId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "groupReservation_groupDiscussionId_fkey",
+          "public",
+          "\"public\".\"groupReservation\""
+        ]
+      }
+    ]
+  }
+]

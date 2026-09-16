@@ -12,6 +12,7 @@ model User {
   password            String
   isEmailVerified     Boolean           @default(false)
   bio                 String?
+  profilePhoto        String?
   interests           String[]?
   languageProficiency LanguageProficiency?
   rating              Float?            @default(0)
@@ -22,6 +23,7 @@ model User {
   ratingsReceived     Rating[]          @relation("RatingsReceived")
   conversationsAsUser1 Conversation[]   @relation("User1Conversations")
   conversationsAsUser2 Conversation[]   @relation("User2Conversations")
+  groupReservations GroupReservation[]
   groupParticipants   GroupParticipant[]
 
   createdAt TimestamptzString @default(now())
@@ -137,12 +139,15 @@ model GroupDiscussion {
 
   topic Topic @relation(fields: [topicId], references: [id], onDelete: Restrict)
   groupParticipants GroupParticipant[]
+  reservations GroupReservation[]
 
   createdAt TimestamptzString @default(now())
   updatedAt temporal.updatedAtString()
+  scheduledStartAt TimestamptzString?
 
   @@index([topicId])
   @@index([status])
+  @@index([scheduledStartAt])
 
   @@check(
     expression: "\"maxParticipants\" > 0",
@@ -181,6 +186,27 @@ model GroupParticipant {
   )
 }
 
+model GroupReservation {
+  id                String @id @default(uuid())
+
+  groupDiscussionId String
+  userId            String
+
+  status            ReservationStatus
+
+  reservedAt        TimestamptzString @default(now())
+  confirmedAt       TimestamptzString?
+  cancelledAt       TimestamptzString?
+
+  user              User            @relation(fields: [userId], references: [id], onDelete: Restrict)
+  groupDiscussion   GroupDiscussion @relation(fields: [groupDiscussionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupDiscussionId])
+  @@index([groupDiscussionId])
+  @@index([userId])
+  @@index([status])
+}
+
 //enums
 
 enum SessionStatus {
@@ -197,4 +223,11 @@ enum LanguageProficiency {
   UPPER_INTERMEDIATE
   ADVANCED
   PROFICIENT
+}
+
+enum ReservationStatus {
+  RESERVED
+  CONFIRMED
+  CANCELLED
+  EXPIRED
 }

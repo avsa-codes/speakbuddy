@@ -16,6 +16,10 @@
       "model": "GroupParticipant",
       "namespace": "public"
     },
+    "groupReservation": {
+      "model": "GroupReservation",
+      "namespace": "public"
+    },
     "rating": {
       "model": "Rating",
       "namespace": "public"
@@ -59,6 +63,27 @@
               {
                 "name": "PROFICIENT",
                 "value": "PROFICIENT"
+              }
+            ]
+          },
+          "ReservationStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "RESERVED",
+                "value": "RESERVED"
+              },
+              {
+                "name": "CONFIRMED",
+                "value": "CONFIRMED"
+              },
+              {
+                "name": "CANCELLED",
+                "value": "CANCELLED"
+              },
+              {
+                "name": "EXPIRED",
+                "value": "EXPIRED"
               }
             ]
           },
@@ -275,6 +300,13 @@
                   "kind": "scalar"
                 }
               },
+              "scheduledStartAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
               "startedAt": {
                 "nullable": true,
                 "type": {
@@ -326,6 +358,21 @@
                   "namespace": "public"
                 }
               },
+              "reservations": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "groupDiscussionId"
+                  ]
+                },
+                "to": {
+                  "model": "GroupReservation",
+                  "namespace": "public"
+                }
+              },
               "topic": {
                 "cardinality": "N:1",
                 "on": {
@@ -358,6 +405,9 @@
                 },
                 "maxParticipants": {
                   "column": "maxParticipants"
+                },
+                "scheduledStartAt": {
+                  "column": "scheduledStartAt"
                 },
                 "startedAt": {
                   "column": "startedAt"
@@ -466,6 +516,124 @@
               },
               "namespaceId": "public",
               "table": "groupParticipant"
+            }
+          },
+          "GroupReservation": {
+            "fields": {
+              "cancelledAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "confirmedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "groupDiscussionId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "reservedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "ReservationStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "groupDiscussion": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "groupDiscussionId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "GroupDiscussion",
+                  "namespace": "public"
+                }
+              },
+              "user": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "userId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "cancelledAt": {
+                  "column": "cancelledAt"
+                },
+                "confirmedAt": {
+                  "column": "confirmedAt"
+                },
+                "groupDiscussionId": {
+                  "column": "groupDiscussionId"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "reservedAt": {
+                  "column": "reservedAt"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "userId": {
+                  "column": "userId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "groupReservation"
             }
           },
           "Rating": {
@@ -731,6 +899,13 @@
                   "kind": "scalar"
                 }
               },
+              "profilePhoto": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "rating": {
                 "nullable": true,
                 "type": {
@@ -806,6 +981,21 @@
                   "namespace": "public"
                 }
               },
+              "groupReservations": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "userId"
+                  ]
+                },
+                "to": {
+                  "model": "GroupReservation",
+                  "namespace": "public"
+                }
+              },
               "ratingsGiven": {
                 "cardinality": "1:N",
                 "on": {
@@ -868,6 +1058,9 @@
                 },
                 "password": {
                   "column": "password"
+                },
+                "profilePhoto": {
+                  "column": "profilePhoto"
                 },
                 "rating": {
                   "column": "rating"
@@ -1122,6 +1315,11 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
+                "scheduledStartAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
                 "startedAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "nativeType": "timestamptz",
@@ -1169,6 +1367,14 @@
                 }
               ],
               "indexes": [
+                {
+                  "columns": [
+                    "scheduledStartAt"
+                  ],
+                  "name": "groupDiscussion_scheduledStartAt_idx_16bf47c9",
+                  "prefix": "groupDiscussion_scheduledStartAt_idx",
+                  "unique": false
+                },
                 {
                   "columns": [
                     "status"
@@ -1279,6 +1485,137 @@
                   ],
                   "name": "groupParticipant_userId_idx_a489d58a",
                   "prefix": "groupParticipant_userId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "userId",
+                    "groupDiscussionId"
+                  ]
+                }
+              ]
+            },
+            "groupReservation": {
+              "checks": [
+                {
+                  "expression": "\"status\" IN ('RESERVED', 'CONFIRMED', 'CANCELLED', 'EXPIRED')",
+                  "name": "groupReservation_status_check_6d3a3bcb",
+                  "prefix": "groupReservation_status_check"
+                }
+              ],
+              "columns": {
+                "cancelledAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "confirmedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "groupDiscussionId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "reservedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "ReservationStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "userId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "userId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "groupReservation"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  }
+                },
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "groupDiscussionId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "groupReservation"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "groupDiscussion"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "groupDiscussionId"
+                  ],
+                  "name": "groupReservation_groupDiscussionId_idx_772d1f81",
+                  "prefix": "groupReservation_groupDiscussionId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "status"
+                  ],
+                  "name": "groupReservation_status_idx_e98638ab",
+                  "prefix": "groupReservation_status_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "userId"
+                  ],
+                  "name": "groupReservation_userId_idx_a489d58a",
+                  "prefix": "groupReservation_userId_idx",
                   "unique": false
                 }
               ],
@@ -1542,6 +1879,11 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "profilePhoto": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "rating": {
                   "codecId": "pg/float8@1",
                   "default": {
@@ -1604,6 +1946,15 @@
                 "PROFICIENT"
               ]
             },
+            "ReservationStatus": {
+              "kind": "valueSet",
+              "values": [
+                "RESERVED",
+                "CONFIRMED",
+                "CANCELLED",
+                "EXPIRED"
+              ]
+            },
             "SessionStatus": {
               "kind": "valueSet",
               "values": [
@@ -1619,10 +1970,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "6939203e0973f1a0c6199a936bb1bab3d9bd27d4a64486cc5cce620ede802c25"
+    "storageHash": "308a21fa409ef92c5fbd783fe118bfe505d11b3c9fd3dc09cb9fafdf4b883ff0"
   },
   "execution": {
-    "executionHash": "abc258c1e537e06409ac342101c62ed883ebc131afbb03a2e143700edb69a010",
+    "executionHash": "85435f1d509feb4b0acede1f5955bc886b580ad213cfcb4cda5cea5f3dace1b1",
     "mutations": {
       "defaults": [
         {
@@ -1671,6 +2022,17 @@
             "column": "id",
             "namespace": "public",
             "table": "groupParticipant"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "groupReservation"
           }
         },
         {
