@@ -36,6 +36,7 @@ export const editProfile = async (
     Object.entries(data).filter(([, value]) => value !== undefined),
   );
 
+
   return await db.orm.public.User.where({ id: userId }).update(updateData);
 };
 
@@ -47,4 +48,13 @@ export const removeProfile = async (userId: string) => {
 
     return user;
   
+};
+
+export const updateProfilePhoto = async (
+  userId: string,
+  profilePhoto: string,
+) => {
+  return await db.orm.public.User.where({ id: userId }).update({
+    profilePhoto,
+  });
 };

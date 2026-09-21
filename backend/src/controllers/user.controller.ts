@@ -1,5 +1,13 @@
 import type { NextFunction, Request, Response } from "express";
-import { fetchOwnProfile, fetchUserProfile, editProfile, removeProfile } from "../services/user.service";
+import {
+  fetchOwnProfile,
+  fetchUserProfile,
+  editProfile,
+  removeProfile,
+  updateProfilePhoto,
+} from "../services/user.service.js";
+import { uploadProfilePhoto as uploadProfilePhotoToS3 } from "../services/s3.service.js";
+import { getProfilePhotoUrl } from "../services/s3.service.js";
 
 export const getUserProfile = async (
   req: Request,
@@ -20,10 +28,19 @@ export const getUserProfile = async (
       return;
     }
 
-    res.status(200).json({
-      success: true,
-      data: user,
-    });
+    let profilePhotoUrl: string | null = null;
+
+    if (user.profilePhoto) {
+      profilePhotoUrl = await getProfilePhotoUrl(user.profilePhoto); // Important
+    }
+
+res.status(200).json({
+  success: true,
+  data: {
+    ...user,
+    profilePhoto: profilePhotoUrl,
+  },
+});
   } catch (error) {
     next(error); 
   }
@@ -54,8 +71,14 @@ export const getOwnProfile = async (
       });
       return;
     }
+const { password: _, ...safeUser } = user;
 
-    const { password: _, ...safeUser } = user;
+let profilePhotoUrl: string | null = null;
+
+if (user.profilePhoto) {
+  profilePhotoUrl = await getProfilePhotoUrl(user.profilePhoto); // Important 
+
+}
 
     res.status(200).json({
       success: true,
@@ -145,3 +168,52 @@ export const deleteProfile = async (
     next(error);
   }
 };
+
+export const uploadProfilePhoto = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      res.status(401).json({
+        success: false,
+        message: "Authentication required.",
+      });
+      return;
+    }
+
+    if (!req.file) {
+      res.status(400).json({
+        success: false,
+        message: "Profile photo is required.",
+      });
+      return;
+    }
+
+    const key = await uploadProfilePhotoToS3(req.file);
+
+    const updatedUser = await updateProfilePhoto(userId, key);
+
+    if (!updatedUser) {
+      res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Profile photo uploaded successfully.",
+      data: {
+        profilePhoto: updatedUser.profilePhoto,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+

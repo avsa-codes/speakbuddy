@@ -3,13 +3,24 @@ import { useAuth } from '../../../context/AuthContext';
 
 function ProfileHeader() {
   const { currentUser } = useAuth();
+  
 
   return (
     <div className="mt-10 rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl shadow-black/10 sm:p-8">
       <div className="flex flex-col items-center text-center sm:flex-row sm:items-center sm:text-left">
-        {/* Profile photo placeholder */}
-        <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border border-indigo-400/20 bg-indigo-500/10 text-3xl font-bold text-indigo-300">
-          {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
+     {/* Profile photo */}
+        <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full border border-indigo-400/20 bg-indigo-500/10">
+          {currentUser?.profilePhotoUrl ? (
+            <img
+              src={currentUser.profilePhotoUrl}
+              alt={`${currentUser.name}'s profile`}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-3xl font-bold text-indigo-300">
+              {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
+            </div>
+          )}
         </div>
 
         {/* User information */}

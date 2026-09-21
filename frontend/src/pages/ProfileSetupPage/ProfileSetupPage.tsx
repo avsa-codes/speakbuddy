@@ -1,10 +1,11 @@
 import { Navbar } from '../../components/Navbar';
 import { useAuth } from '../../context/AuthContext';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function ProfileSetupPage() {
-  const { currentUser } = useAuth();
-
+  const { currentUser, checkAuth } = useAuth();
+const navigate = useNavigate();
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
@@ -15,6 +16,12 @@ function ProfileSetupPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isProficiencyOpen, setIsProficiencyOpen] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(
+    currentUser?.profilePhoto ?? null
+  );
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const proficiencyOptions = [
     { value: 'BEGINNER', label: 'Beginner' },
@@ -25,6 +32,50 @@ function ProfileSetupPage() {
     { value: 'PROFICIENT', label: 'Proficient' },
   ];
 
+
+
+  const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    setSelectedPhoto(file);
+  };
+
+  const handlePhotoUpload = async () => {
+    if (!selectedPhoto) return;
+
+    setIsUploadingPhoto(true);
+    setError('');
+
+    try {
+      const formData = new FormData();
+      formData.append('profilePhoto', selectedPhoto);
+
+      const response = await fetch('http://localhost:5000/api/users/me/photo', {
+        method: 'PATCH',
+        credentials: 'include',
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to upload photo.');
+      }
+
+      setSuccess('Profile photo uploaded successfully!');
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : 'Something went wrong while uploading the photo.'
+      );
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
+
   async function handleSaveProfile(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -33,6 +84,10 @@ function ProfileSetupPage() {
     setSuccess('');
 
     try {
+      console.log({
+        languageProficiency,
+        interests,
+      });
       const response = await fetch('http://localhost:5000/api/users/me', {
         method: 'PATCH',
         credentials: 'include',
@@ -44,7 +99,7 @@ function ProfileSetupPage() {
           username,
           bio,
           interests,
-          languageProficiency,
+          languageProficiency: languageProficiency || undefined,
         }),
       });
 
@@ -54,7 +109,15 @@ function ProfileSetupPage() {
         throw new Error(data.message || 'Failed to update profile.');
       }
 
+      if (selectedPhoto) {
+        await handlePhotoUpload();
+      }
+
+      
+
       setSuccess('Profile updated successfully!');
+      await checkAuth();
+      navigate('/home');
     } catch (error) {
       setError(
         error instanceof Error
@@ -66,15 +129,16 @@ function ProfileSetupPage() {
     }
   }
 
- useEffect(() => {
-   if (currentUser) {
-     setName(currentUser.name);
-     setUsername(currentUser.username);
-     setBio(currentUser.bio ?? '');
-     setInterests(currentUser.interests ?? []);
-     setLanguageProficiency(currentUser.languageProficiency ?? '');
-   }
- }, [currentUser]);
+useEffect(() => {
+  if (currentUser) {
+    setName(currentUser.name);
+    setUsername(currentUser.username);
+    setBio(currentUser.bio ?? '');
+    setInterests(currentUser.interests ?? []);
+    setLanguageProficiency(currentUser.languageProficiency ?? '');
+    setPhotoPreview(currentUser.profilePhoto ?? null);
+  }
+}, [currentUser]);
 
   function addInterest() {
     const newInterest = interestInput.trim();
@@ -96,6 +160,15 @@ function ProfileSetupPage() {
     interests.filter((interest) => interest !== interestToRemove)
   );
 }
+
+useEffect(() => {
+  if (!selectedPhoto) return;
+
+  const previewUrl = URL.createObjectURL(selectedPhoto);
+  setPhotoPreview(previewUrl);
+
+  return () => URL.revokeObjectURL(previewUrl);
+}, [selectedPhoto]);
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -120,19 +193,38 @@ function ProfileSetupPage() {
             {/* Profile Photo */}
 
             <div className="flex flex-col items-center border-b border-white/10 pb-8">
-              <div className="flex h-28 w-28 items-center justify-center rounded-full border border-white/20 bg-white/5 text-4xl text-slate-500">
-                +
+              <div className="h-28 w-28 overflow-hidden rounded-full border border-white/20 bg-white/5">
+                {photoPreview ? (
+                  <img
+                    src={photoPreview}
+                    alt="Profile preview"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-4xl text-slate-500">
+                    +
+                  </div>
+                )}
               </div>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handlePhotoSelect}
+                className="hidden"
+              />
 
               <button
                 type="button"
+                onClick={() => fileInputRef.current?.click()}
                 className="mt-4 rounded-xl bg-blue-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-400"
               >
                 Add Photo
               </button>
 
               <p className="mt-2 text-xs text-slate-500">
-                You can add a profile photo later.
+                JPG, PNG or WebP · Max 5 MB
               </p>
             </div>
 
@@ -321,10 +413,14 @@ function ProfileSetupPage() {
             <div className="mt-8 border-t border-white/10 pt-8 text-center">
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || isUploadingPhoto}
                 className="rounded-xl bg-blue-500 px-8 py-3 font-semibold text-white transition hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isLoading ? 'Saving...' : 'Save Profile'}
+                {isUploadingPhoto
+                  ? 'Uploading Photo...'
+                  : isLoading
+                  ? 'Saving...'
+                  : 'Save Profile'}
               </button>
             </div>
           </form>

@@ -9,6 +9,8 @@ export type User = {
   rating: number;
   totalRatings: number;
   isEmailVerified: boolean;
+  profilePhoto: string | null;
+  profilePhotoUrl: string | null;
   createdAt: string;
   updatedAt: string;
 };

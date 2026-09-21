@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 
 function ProfileInformation() {
@@ -17,8 +17,16 @@ function ProfileInformation() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+    const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
+    const [photoPreview, setPhotoPreview] = useState<string | null>(
+      currentUser?.profilePhoto ?? null
+    );
+    const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     if (currentUser) {
+      console.log('CURRENT USER PHOTO:', currentUser.profilePhoto);
       setName(currentUser.name);
       setUsername(currentUser.username);
       setBio(currentUser.bio ?? '');
@@ -66,6 +74,52 @@ function ProfileInformation() {
     setInterests(interests.filter((interest) => interest !== interestToRemove));
   }
 
+  
+  const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    setSelectedPhoto(file);
+  };
+
+    const handlePhotoUpload = async () => {
+      if (!selectedPhoto) return;
+
+      setIsUploadingPhoto(true);
+      setError('');
+
+      try {
+        const formData = new FormData();
+        formData.append('profilePhoto', selectedPhoto);
+
+        const response = await fetch(
+          'http://localhost:5000/api/users/me/photo',
+          {
+            method: 'PATCH',
+            credentials: 'include',
+            body: formData,
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to upload photo.');
+        }
+
+        setSuccess('Profile photo uploaded successfully!');
+      } catch (error) {
+        setError(
+          error instanceof Error
+            ? error.message
+            : 'Something went wrong while uploading the photo.'
+        );
+      } finally {
+        setIsUploadingPhoto(false);
+      }
+    };
+
   async function handleSave() {
     try {
       setIsLoading(true);
@@ -93,6 +147,10 @@ function ProfileInformation() {
         throw new Error(data.message);
       }
 
+      if (selectedPhoto) {
+        await handlePhotoUpload();
+      }
+
       setSuccess('Profile updated successfully.');
       await checkAuth();
       setIsEditing(false);
@@ -104,6 +162,21 @@ function ProfileInformation() {
       setIsLoading(false);
     }
   }
+
+  useEffect(() => {
+    if (!selectedPhoto) return;
+
+    const previewUrl = URL.createObjectURL(selectedPhoto);
+    setPhotoPreview(previewUrl);
+
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [selectedPhoto]);
+
+  useEffect(() => {
+    if (currentUser) {
+      setPhotoPreview(currentUser.profilePhoto ?? null);
+    }
+  }, [currentUser]);
 
   return (
     <section className="mt-6 rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl shadow-black/10 sm:p-8">
@@ -217,6 +290,42 @@ function ProfileInformation() {
         </div>
       ) : (
         <div className="mt-7 space-y-6">
+          
+          <div className="flex flex-col items-center border-b border-white/10 pb-8">
+            <div className="h-28 w-28 overflow-hidden rounded-full border border-white/20 bg-white/5">
+              {photoPreview ? (
+                <img
+                  src={photoPreview}
+                  alt="Profile preview"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-4xl text-slate-500">
+                  +
+                </div>
+              )}
+            </div>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handlePhotoSelect}
+              className="hidden"
+            />
+
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="mt-4 rounded-xl bg-blue-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-400"
+            >
+              Add Photo
+            </button>
+
+            <p className="mt-2 text-xs text-slate-500">
+              JPG, PNG or WebP · Max 5 MB
+            </p>
+          </div>
           <div className="grid gap-6 sm:grid-cols-2">
             <div>
               <label className="text-xs font-medium uppercase tracking-wider text-slate-500">
@@ -244,7 +353,6 @@ function ProfileInformation() {
               />
             </div>
           </div>
-
           <div>
             <label className="text-xs font-medium uppercase tracking-wider text-slate-500">
               Email
@@ -258,7 +366,6 @@ function ProfileInformation() {
               Email cannot be changed here.
             </p>
           </div>
-
           <div>
             <label className="text-xs font-medium uppercase tracking-wider text-slate-500">
               Bio
@@ -272,7 +379,6 @@ function ProfileInformation() {
               placeholder="Tell people a little about yourself..."
             />
           </div>
-
           <div>
             <label className="text-xs font-medium uppercase tracking-wider text-slate-500">
               Interests
@@ -315,7 +421,6 @@ function ProfileInformation() {
               ))}
             </div>
           </div>
-
           <div>
             <label className="text-xs font-medium uppercase tracking-wider text-slate-500">
               Language Proficiency
@@ -349,7 +454,6 @@ function ProfileInformation() {
               </option>
             </select>
           </div>
-
           <div className="flex flex-col-reverse gap-3 border-t border-white/10 pt-6 sm:flex-row sm:justify-end">
             <button
               type="button"
