@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { User } from '../types/user';
+import { socket } from '../socket/socket';
 
 type AuthContextType = {
   currentUser: User | null;
@@ -44,6 +45,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
     }
   }
+
+  useEffect(() => {
+    if (currentUser) {
+      socket.connect();
+    } else {
+      socket.disconnect();
+    }
+
+    return () => { //cleanup function
+      socket.disconnect();
+    };
+  }, [currentUser]);
 
   async function login(email: string, password: string) {
     const response = await fetch('http://localhost:5000/api/auth/login', {

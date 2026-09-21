@@ -7,6 +7,9 @@ import HomePage from './pages/HomePage/HomePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ProfilePage from './pages/ProfilePage/ProfilePage';
 import GroupsPage from './pages/GroupsPage/GroupsPage';
+import './socket/socket';
+import ConversationPage from './pages/Conversation/ConversationPage';
+
 
 function App() {
 
@@ -25,6 +28,7 @@ function App() {
           <Route path="/home" element={<HomePage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/groups" element={<GroupsPage />} />
+          <Route path="/conversation" element={<ConversationPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
