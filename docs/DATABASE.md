@@ -336,3 +336,18 @@ Voice/video data is **not stored in the database**.
 - WebRTC handles the actual audio/video communication.
 - Socket.IO handles WebRTC signaling and real-time session events.
 - The database stores only session metadata such as participants, topic, status, timestamps, and duration.
+
+
+ Edit contract.prisma
+          ↓
+2. npx prisma@latest contract emit
+          ↓
+3. npx prisma@latest migration plan --name add_group_reservations
+          ↓
+4. REVIEW generated migration
+          ↓
+5. npx prisma@latest migration status
+          ↓
+6. npx prisma@latest migrate --show
+          ↓
+7. npx prisma@latest migrate

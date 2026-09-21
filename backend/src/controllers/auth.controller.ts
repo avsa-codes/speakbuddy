@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import { getProfilePhotoUrl } from "../services/s3.service.js";
 import type { NextFunction, Request, Response } from "express";
 import {
   userSignup,
@@ -143,12 +144,21 @@ export const getMe = async (
       return;
     }
 
-    const { password: _, ...safeUser } = user;
+const { password: _, ...safeUser } = user;
 
-    res.status(200).json({
-      success: true,
-      data: safeUser,
-    });
+let profilePhotoUrl: string | null = null;
+
+if (user.profilePhoto) {
+  profilePhotoUrl = await getProfilePhotoUrl(user.profilePhoto);
+}
+
+res.status(200).json({
+  success: true,
+  data: {
+    ...safeUser,
+    profilePhotoUrl,
+  },
+});
   } catch (error) {
     next(error);
   }

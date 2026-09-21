@@ -1,11 +1,12 @@
 import { Router } from "express";
 import { getAllTopics, getTopicById, createTopic, updateTopic, deleteTopic } from "../controllers/topic.controller";
 import { authenticateAdmin } from "../middleware/adminAuth.middleware";
+import { authenticate } from "../middleware/auth.middleware";
 const router = Router();
 
-router.get('/topics', getAllTopics);
+router.get('/topics', authenticate, getAllTopics);
 
-router.get("/topics/:id", getTopicById);
+router.get("/topics/:id", authenticate, getTopicById);
 
 router.post("/topics", authenticateAdmin, createTopic);
 
