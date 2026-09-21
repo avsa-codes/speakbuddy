@@ -1,6 +1,10 @@
 import { ArrowRight, MessageCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 function StartConversationCard() {
+
+  const navigate = useNavigate();
+
   return (
     <section className="relative overflow-hidden rounded-3xl border border-indigo-400/20 bg-gradient-to-br from-indigo-500/10 via-blue-500/5 to-transparent p-6 shadow-2xl shadow-indigo-950/20 sm:p-8 lg:p-10">
       {/* Decorative conversation bubbles */}
@@ -32,6 +36,7 @@ function StartConversationCard() {
 
         <button
           type="button"
+          onClick={() => navigate('/conversation')}
           className="mt-7 inline-flex items-center gap-3 rounded-xl bg-blue-500 px-6 py-3.5 font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-400"
         >
           Start Conversation
