@@ -10,7 +10,26 @@ The project is being built as a full-stack application with a focus on **real-ti
 
 ---
 
+## 📸 Screenshots
+
+### Landing Page
+
+![SpeakBuddy Landing Page](screenshots/landing.png)
+
+### Profile
+
+![SpeakBuddy Profile](screenshots/profile.png)
+
+
+### Real-Time Conversation
+
+![SpeakBuddy Conversation](screenshots/conversation.png)
+
+---
+
 ## ✨ Features
+
+...
 
 ### 🔐 Authentication & Profiles
 
