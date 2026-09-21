@@ -14,16 +14,16 @@ The project is being built as a full-stack application with a focus on **real-ti
 
 ### Landing Page
 
-![SpeakBuddy Landing Page](screenshots/landing.png)
+![SpeakBuddy Landing Page](landing.png)
 
 ### Profile
 
-![SpeakBuddy Profile](screenshots/profile.png)
+![SpeakBuddy Profile](profile.png)
 
 
 ### Real-Time Conversation
 
-![SpeakBuddy Conversation](screenshots/conversation.png)
+![SpeakBuddy Conversation](conversation.png)
 
 ---
 
