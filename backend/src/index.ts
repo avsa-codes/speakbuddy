@@ -11,6 +11,7 @@ import conversationRoutes from "./routes/conversation.routes.js";
 import ratingRoutes from "./routes/rating.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import { errorHandler } from "./middleware/error.middleware.js";
+import groupDiscussionRoutes from "./routes/groupDiscussion.routes.js";
 
 
 
@@ -37,6 +38,7 @@ app.use("/api", topicRoutes);
 app.use("/api", conversationRoutes);
 app.use("/api", ratingRoutes);
 app.use("/api", adminRoutes);
+app.use("/api/group-discussions", groupDiscussionRoutes);
 
 // Health check
 app.get("/api/health", (_req, res) => {
