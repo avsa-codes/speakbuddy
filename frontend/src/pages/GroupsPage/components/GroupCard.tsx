@@ -2,7 +2,7 @@ import { ArrowRight, Users } from 'lucide-react';
 import type { Group } from '../../../types/group';
 
 function GroupCard({ group }: { group: Group }) {
-  const isFull = group.participants >= group.maxParticipants;
+  const isFull = group.participantCount >= group.maxParticipants;
 
   return (
     <article className="group rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl shadow-black/10 transition hover:-translate-y-0.5 hover:border-indigo-400/20 hover:bg-white/[0.04] sm:p-7">
@@ -12,8 +12,8 @@ function GroupCard({ group }: { group: Group }) {
             Group Discussion
           </p>
 
-          <h2 className="mt-2 truncate text-xl font-bold text-white">
-            {group.topic}
+          <h2 className="mt-2 text-xl font-bold text-white">
+            {group.topic.title}
           </h2>
         </div>
 
@@ -23,7 +23,7 @@ function GroupCard({ group }: { group: Group }) {
       </div>
 
       <p className="mt-4 min-h-[72px] text-sm leading-6 text-slate-400">
-        {group.description}
+        {group.topic.description}
       </p>
 
       <div className="mt-6 flex items-center justify-between gap-4 border-t border-white/10 pt-5">
@@ -31,7 +31,7 @@ function GroupCard({ group }: { group: Group }) {
           <div className="flex items-center gap-2 text-sm text-slate-300">
             <Users size={17} className="text-slate-500" />
             <span>
-              {group.participants}/{group.maxParticipants}
+              {group.participantCount}/{group.maxParticipants}
             </span>
           </div>
 

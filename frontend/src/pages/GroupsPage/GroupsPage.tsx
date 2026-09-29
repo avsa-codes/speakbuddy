@@ -3,36 +3,31 @@ import MobileNavigation from '../../components/MobileNavigation';
 import GroupCard from './components/GroupCard';
 import type { Group } from '../../types/group';
 import MobileHeader from '../../components/MobileHeader';
+import { useEffect, useState } from 'react';
+
 
 function GroupsPage() {
 
 
-  const groups: Group[] = [
-    {
-      id: '1',
-      topic: 'Job Interviews',
-      description:
-        'Practice common interview questions and build confidence speaking English.',
-      participants: 3,
-      maxParticipants: 6,
-    },
-    {
-      id: '2',
-      topic: 'Daily English',
-      description:
-        'Have relaxed conversations and improve your everyday English fluency.',
-      participants: 4,
-      maxParticipants: 6,
-    },
-    {
-      id: '3',
-      topic: 'Technology & AI',
-      description:
-        'Discuss technology, AI, and the latest ideas while practicing English.',
-      participants: 2,
-      maxParticipants: 5,
-    },
-  ];
+  const [groups, setGroups] = useState<Group[]>([]);
+
+  useEffect(() => {
+    const fetchGroups = async () => {
+      const response = await fetch(
+        'http://localhost:5000/api/group-discussions',
+        {
+          credentials: 'include',
+        }
+      );
+
+      const data = await response.json();
+
+      setGroups(data.data);
+    };
+
+    fetchGroups();
+  }, []);
+
 
   return (
     <main className="min-h-screen bg-[#070B1A] text-white lg:flex">

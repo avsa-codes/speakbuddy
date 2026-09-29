@@ -1,7 +1,13 @@
 export type Group = {
   id: string;
-  topic: string;
-  description: string;
+  topicId: string;
   maxParticipants: number;
-  participants: number;
+  status: string;
+  scheduledStartAt: string;
+  participantCount: number;
+  topic: {
+    id: string;
+    title: string;
+    description: string;
+  };
 };
