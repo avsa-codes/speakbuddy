@@ -16,14 +16,30 @@ export const createGroupDiscussion = async (data: {
 export const getUpcomingGroupDiscussions = async () => {
   const discussions = await db.orm.public.GroupDiscussion.where({
     status: "WAITING",
-  }).all();
+  })
+    .include("topic")
+    .include("reservations")
+    .all();
 
-  const now = new Date().toISOString();
+  const now = Date.now();
 
-  return discussions.filter(
-    (discussion) =>
-      discussion.scheduledStartAt && discussion.scheduledStartAt >= now,
-  );
+  //1. Get the discussions whose scheduled time is in future
+  //2. Take each discussion and add extra property participant count
+  //3. Participant count is number of particpants whose reservation status is reserved
+  //4. reservations is coming from the relationship of prisma model 
+
+  return discussions
+    .filter(
+      (discussion) =>
+        discussion.scheduledStartAt &&
+        new Date(discussion.scheduledStartAt).getTime() >= now,
+    )
+    .map((discussion) => ({
+      ...discussion,
+      participantCount: discussion.reservations.filter(
+        (reservation) => reservation.status === "RESERVED",  //number of reserved - participant count
+      ).length,
+    }));
 };
 
 
@@ -159,5 +175,103 @@ export const endGroupDiscussion = async (groupDiscussionId: string) => {
     status: "COMPLETED",
     endedAt,
     duration,
+  });
+};
+
+export const enterGroupDiscussionWaitingRoom = async (
+  groupDiscussionId: string,
+  userId: string,
+) => {
+  const discussion = await db.orm.public.GroupDiscussion.where({
+    id: groupDiscussionId,
+  }).first();
+
+  if (!discussion) {
+    throw new Error("GROUP_DISCUSSION_NOT_FOUND");
+  }
+
+  if (discussion.status !== "WAITING") {
+    throw new Error("WAITING_ROOM_NOT_AVAILABLE");
+  }
+
+  const reservation = await db.orm.public.GroupReservation.where({
+    groupDiscussionId,
+    userId,
+  }).first();
+
+  if (!reservation) {
+    throw new Error("RESERVATION_REQUIRED");
+  }
+
+  if (reservation.status !== "RESERVED") {
+    throw new Error("RESERVATION_NOT_ACTIVE");
+  }
+
+  return discussion;
+};
+
+
+export const joinGroupDiscussion = async (
+  groupDiscussionId: string,
+  userId: string,
+) => {
+  const discussion = await db.orm.public.GroupDiscussion.where({
+    id: groupDiscussionId,
+  }).first();
+
+  if (!discussion) {
+    throw new Error("GROUP_DISCUSSION_NOT_FOUND");
+  }
+
+  if (discussion.status !== "ACTIVE") {
+    throw new Error("GROUP_DISCUSSION_NOT_ACTIVE");
+  }
+
+  const reservation = await db.orm.public.GroupReservation.where({
+    groupDiscussionId,
+    userId,
+  }).first();
+
+  if (!reservation || reservation.status !== "RESERVED") {
+    throw new Error("RESERVATION_REQUIRED");
+  }
+
+  const existingParticipant = await db.orm.public.GroupParticipant.where({
+    groupDiscussionId,
+    userId,
+  }).first();
+
+  if (existingParticipant) {
+    return existingParticipant;
+  }
+
+  return await db.orm.public.GroupParticipant.create({
+    groupDiscussionId,
+    userId,
+    joinedAt: new Date().toISOString(),
+  });
+};
+
+export const leaveGroupDiscussion = async (
+  groupDiscussionId: string,
+  userId: string,
+) => {
+  const participant = await db.orm.public.GroupParticipant.where({
+    groupDiscussionId,
+    userId,
+  }).first();
+
+  if (!participant) {
+    throw new Error("PARTICIPANT_NOT_FOUND");
+  }
+
+  if (participant.leftAt) {
+    throw new Error("PARTICIPANT_ALREADY_LEFT");
+  }
+
+  return await db.orm.public.GroupParticipant.where({
+    id: participant.id,
+  }).update({
+    leftAt: new Date().toISOString(),
   });
 };
