@@ -42,6 +42,19 @@ export const getUpcomingGroupDiscussions = async () => {
     }));
 };
 
+export const getAllGroupDiscussionsForAdmin = async () => {
+  const discussions = await db.orm.public.GroupDiscussion.include("topic")
+    .include("reservations")
+    .all();
+
+  return discussions.map((discussion) => ({
+    ...discussion,
+    participantCount: discussion.reservations.filter(
+      (reservation) => reservation.status === "RESERVED",
+    ).length,
+  }));
+};
+
 
 export const reserveGroupDiscussion = async (
   groupDiscussionId: string,
@@ -190,9 +203,9 @@ export const enterGroupDiscussionWaitingRoom = async (
     throw new Error("GROUP_DISCUSSION_NOT_FOUND");
   }
 
-  if (discussion.status !== "WAITING") {
-    throw new Error("WAITING_ROOM_NOT_AVAILABLE");
-  }
+if (discussion.status !== "WAITING" && discussion.status !== "ACTIVE") {
+  throw new Error("WAITING_ROOM_NOT_AVAILABLE");
+}
 
   const reservation = await db.orm.public.GroupReservation.where({
     groupDiscussionId,
@@ -274,4 +287,18 @@ export const leaveGroupDiscussion = async (
   }).update({
     leftAt: new Date().toISOString(),
   });
+};
+
+export const getGroupDiscussionById = async (groupDiscussionId: string) => {
+  const discussion = await db.orm.public.GroupDiscussion.where({
+    id: groupDiscussionId,
+  })
+    .include("topic")
+    .first();
+
+  if (!discussion) {
+    throw new Error("GROUP_DISCUSSION_NOT_FOUND");
+  }
+
+  return discussion;
 };

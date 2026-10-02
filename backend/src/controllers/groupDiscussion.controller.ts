@@ -10,6 +10,8 @@ import {
   endGroupDiscussion,
   enterGroupDiscussionWaitingRoom,
   joinGroupDiscussion,
+  getAllGroupDiscussionsForAdmin,
+  getGroupDiscussionById
 } from "../services/groupDiscussion.service.js";
 import type { Server } from "socket.io";
 
@@ -44,6 +46,23 @@ export const getUpcomingGroupDiscussionsController = async (
 ): Promise<void> => {
   try {
     const discussions = await getUpcomingGroupDiscussions();
+
+    res.status(200).json({
+      success: true,
+      data: discussions,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAllGroupDiscussionsForAdminController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const discussions = await getAllGroupDiscussionsForAdmin();
 
     res.status(200).json({
       success: true,
@@ -184,6 +203,7 @@ export const createStartGroupDiscussionController = (io: Server) => {
 export const createEndGroupDiscussionController = (io: Server) => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      console.log("END SESSION CONTROLLER HIT");
       const groupDiscussionId = req.params.id as string;
 
       const discussion = await endGroupDiscussion(groupDiscussionId);
@@ -264,6 +284,26 @@ export const joinGroupDiscussionController = async (
       success: true,
       message: "Joined group discussion successfully.",
       data: participant,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+export const getGroupDiscussionByIdController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const groupDiscussionId = req.params.id as string;
+
+    const discussion = await getGroupDiscussionById(groupDiscussionId);
+
+    res.status(200).json({
+      success: true,
+      data: discussion,
     });
   } catch (error) {
     next(error);

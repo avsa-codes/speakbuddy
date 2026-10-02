@@ -1,3 +1,4 @@
+import { db } from "../prisma/db.js";
 import bcrypt from "bcryptjs";
 import { getProfilePhotoUrl } from "../services/s3.service.js";
 import type { NextFunction, Request, Response } from "express";
@@ -6,6 +7,8 @@ import {
   userLogin,
   generateToken,
   getCurrentUser,
+  generateRefreshToken,
+  verifyRefreshToken
 } from "../services/auth.service.js";
 import { validationResult } from "express-validator";
 
@@ -44,14 +47,23 @@ export const register = async (
       return;
     }
 
-    const token = generateToken(user.id);
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 1000,
-    });
+const token = generateToken(user.id);
+const refreshToken = generateRefreshToken(user.id);
+
+res.cookie("token", token, {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax",
+  maxAge: 60 * 60 * 1000,
+});
+
+res.cookie("refreshToken", refreshToken, {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+});
 
     const { password: _, ...safeUser } = user;
 
@@ -80,6 +92,7 @@ export const register = async (
   }
 };
 
+
 export const login = async (
   req: Request,
   res: Response,
@@ -88,16 +101,23 @@ export const login = async (
   try {
     const { email, password } = req.body;
 
-    const token = await userLogin({
+    const { accessToken, refreshToken } = await userLogin({
       email,
       password,
     });
 
-    res.cookie("token", token, {
+    res.cookie("token", accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 60 * 60 * 1000,
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.status(200).json({
@@ -160,6 +180,66 @@ res.status(200).json({
   },
 });
   } catch (error) {
+    next(error);
+  }
+};
+
+
+export const refresh = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+      res.status(401).json({
+        success: false,
+        message: "Refresh token required.",
+      });
+      return;
+    }
+
+    const { userId } = verifyRefreshToken(refreshToken);
+
+    const user = await db.orm.public.User.where({
+      id: userId,
+    }).first();
+
+    if (!user || user.isDeleted) {
+      res.status(401).json({
+        success: false,
+        message: "User account is not active.",
+      });
+      return;
+    }
+
+    const accessToken = generateToken(userId);
+
+    res.cookie("token", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 1000,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Access token refreshed.",
+    });
+  } catch (error) {
+    if (
+      (error instanceof Error && error.name === "JsonWebTokenError") ||
+      (error instanceof Error && error.name === "TokenExpiredError")
+    ) {
+      res.status(401).json({
+        success: false,
+        message: "Invalid or expired refresh token.",
+      });
+      return;
+    }
+
     next(error);
   }
 };

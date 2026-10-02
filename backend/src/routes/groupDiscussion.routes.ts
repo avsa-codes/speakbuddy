@@ -11,6 +11,8 @@ import {
   createEndGroupDiscussionController,
   enterGroupDiscussionWaitingRoomController,
   joinGroupDiscussionController,
+  getAllGroupDiscussionsForAdminController,
+  getGroupDiscussionByIdController
 } from "../controllers/groupDiscussion.controller.js";
 
 import { authenticateAdmin } from "../middleware/adminAuth.middleware.js";
@@ -43,7 +45,7 @@ export const createGroupDiscussionRouter = (io: Server) => {
     createStartGroupDiscussionController(io),
   );
 
-  router.post("/:id/end", authenticateAdmin, createEndGroupDiscussionController);
+  router.post("/:id/end", authenticateAdmin, createEndGroupDiscussionController(io));
 
   router.get(
     "/:id/waiting-room",
@@ -52,6 +54,14 @@ export const createGroupDiscussionRouter = (io: Server) => {
   );
 
   router.post("/:id/join", authenticate, joinGroupDiscussionController);
+
+  router.get(
+    "/admin",
+    authenticateAdmin,
+    getAllGroupDiscussionsForAdminController,
+  );
+
+  router.get("/:id", authenticate, getGroupDiscussionByIdController);
 
   return router;
 };

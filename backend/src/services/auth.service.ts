@@ -14,6 +14,19 @@ export const generateToken = (userId: string) => {
   );
 };
 
+export const generateRefreshToken = (userId: string) => {
+  return jwt.sign({ userId }, process.env.JWT_REFRESH_SECRET!, {
+    expiresIn: "7d",
+  });
+};
+
+
+export const verifyRefreshToken = (token: string) => {
+  const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET!);
+
+  return decoded as { userId: string };
+};
+
 export const userSignup = async (data: {
   email: string;
   name: string;
@@ -42,6 +55,7 @@ export const userSignup = async (data: {
   }
 };
 
+
 export const userLogin = async (data: { email: string; password: string }) => {
   const user = await db.orm.public.User.first({
     email: data.email,
@@ -57,9 +71,10 @@ export const userLogin = async (data: { email: string; password: string }) => {
     throw new Error("INVALID_CREDENTIALS");
   }
 
-  const token = generateToken(user.id);
+  const accessToken = generateToken(user.id);
+  const refreshToken = generateRefreshToken(user.id);
 
-  return token;
+  return { accessToken, refreshToken };
 };
 
 export const getCurrentUser = async(userId : string) => {

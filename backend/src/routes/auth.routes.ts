@@ -7,6 +7,7 @@ import {
   login,
   logout,
   getMe,
+  refresh
 } from "../controllers/auth.controller.js";
 
 const router = Router();
@@ -31,6 +32,7 @@ router.post(
   register,
 );
 router.post("/login", login);
+router.post("/refresh", refresh);
 router.post("/logout", authenticate, logout);
 router.get("/me", authenticate, getMe);
 

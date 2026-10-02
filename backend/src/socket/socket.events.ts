@@ -312,11 +312,14 @@ waitingUsers.set(userId, {
        return;
      }
 
-     socket.to(roomName).emit("group:message", {
-       text,
-       senderId: userId,
-       sentAt: new Date().toISOString(),
-     });
+     const sender = await db.orm.public.User.where({ id: userId }).first();
+
+    socket.to(roomName).emit("group:message", {
+      text: text.trim(),
+      senderId: userId,
+      senderName: sender?.name ?? "Participant",
+      sentAt: new Date().toISOString(),
+    });
 
   });
 

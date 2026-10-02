@@ -1,8 +1,59 @@
 import { ArrowRight, Users } from 'lucide-react';
 import type { Group } from '../../../types/group';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 
 function GroupCard({ group }: { group: Group }) {
+
+  const navigate = useNavigate();
+
   const isFull = group.participantCount >= group.maxParticipants;
+  const [isReserving, setIsReserving] = useState(false);
+  const [isReserved, setIsReserved] = useState(false);
+
+  const handleReserve = async () => {
+    setIsReserving(true);
+
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/group-discussions/${group.id}/reserve`,
+        {
+          method: 'POST',
+          credentials: 'include',
+        }
+      );
+
+      const data = await response.json();
+
+      console.log(data);
+      setIsReserved(true);
+    } catch (error) {
+      console.error('Failed to reserve group discussion:', error);
+    } finally {
+      setIsReserving(false);
+    }
+  };
+
+  useEffect( () => {
+    const fetchReservationStatus = async () => {
+      const response = await fetch(
+        `http://localhost:5000/api/group-discussions/${group.id}/reservation`,
+        {
+         credentials: 'include'
+        }
+      );
+
+      const data = await response.json();
+
+      if(data.data?.status === "RESERVED"){
+        setIsReserved(true);
+      }
+
+    };
+
+    fetchReservationStatus();
+  }, [group.id])
 
   return (
     <article className="group rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl shadow-black/10 transition hover:-translate-y-0.5 hover:border-indigo-400/20 hover:bg-white/[0.04] sm:p-7">
@@ -26,6 +77,17 @@ function GroupCard({ group }: { group: Group }) {
         {group.topic.description}
       </p>
 
+      <p className="mt-3 text-sm text-slate-500">
+        Starts{' '}
+        {new Date(group.scheduledStartAt).toLocaleString(undefined, {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+        })}
+      </p>
+
       <div className="mt-6 flex items-center justify-between gap-4 border-t border-white/10 pt-5">
         <div>
           <div className="flex items-center gap-2 text-sm text-slate-300">
@@ -42,10 +104,23 @@ function GroupCard({ group }: { group: Group }) {
 
         <button
           type="button"
-          disabled={isFull}
+          disabled={isFull || isReserving}
+          onClick={() => {
+            if (isReserved) {
+              navigate(`/waiting-room/${group.id}`);
+            } else {
+              handleReserve();
+            }
+          }}
           className="inline-flex items-center gap-2 rounded-xl bg-blue-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-400 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-slate-500 disabled:shadow-none"
         >
-          {isFull ? 'Full' : 'Join Group'}
+          {isFull
+            ? 'Full'
+            : isReserving
+            ? 'Reserving...'
+            : isReserved
+            ? 'Waiting Room'
+            : 'Join Group'}
           {!isFull && (
             <ArrowRight
               size={16}

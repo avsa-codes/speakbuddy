@@ -58,6 +58,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [currentUser]);
 
+  
+useEffect(() => {
+  if (!currentUser || isLoading) {
+    return;
+  }
+
+  const refreshInterval = setInterval(async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/refresh', {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (response.status === 401) {
+        setCurrentUser(null);
+      }
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+    }
+  }, 50 * 60 * 1000);
+
+  return () => {
+    clearInterval(refreshInterval);
+  };
+}, [currentUser, isLoading]);
+
   async function login(email: string, password: string) {
     const response = await fetch('http://localhost:5000/api/auth/login', {
       method: 'POST',
