@@ -57,6 +57,8 @@ function RegisterPage() {
     try {
       await register(name, username, email, password);
 
+      setSuccess("Registration Successful.")
+
       navigate('/setup-profile');
     } catch (error) {
       setError(
@@ -91,6 +93,8 @@ function RegisterPage() {
               Start your speaking journey today.
             </p>
           </div>
+
+          {success && <p className="text-sm text-emerald-400">{success}</p>}
 
           <form
             onSubmit={handleSubmit}

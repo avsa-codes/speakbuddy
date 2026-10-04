@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../../../context/AuthContext';
+import { API_URL } from '../../../config/api';
 
 function ProfileInformation() {
   const { currentUser, checkAuth } = useAuth();
@@ -94,7 +95,7 @@ function ProfileInformation() {
         formData.append('profilePhoto', selectedPhoto);
 
         const response = await fetch(
-          'http://localhost:5000/api/users/me/photo',
+          `${API_URL}/api/users/me/photo`,
           {
             method: 'PATCH',
             credentials: 'include',
@@ -126,7 +127,7 @@ function ProfileInformation() {
       setError('');
       setSuccess('');
 
-      const response = await fetch('http://localhost:5000/api/users/me', {
+      const response = await fetch(`${API_URL}/api/users/me`, {
         method: 'PATCH',
         credentials: 'include',
         headers: {
@@ -290,7 +291,6 @@ function ProfileInformation() {
         </div>
       ) : (
         <div className="mt-7 space-y-6">
-          
           <div className="flex flex-col items-center border-b border-white/10 pb-8">
             <div className="h-28 w-28 overflow-hidden rounded-full border border-white/20 bg-white/5">
               {photoPreview ? (
@@ -317,9 +317,10 @@ function ProfileInformation() {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="mt-4 rounded-xl bg-blue-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-400"
+              disabled={isUploadingPhoto || isLoading}
+              className="mt-4 rounded-xl bg-blue-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Add Photo
+              {isUploadingPhoto ? 'Uploading Photo...' : 'Add Photo'}
             </button>
 
             <p className="mt-2 text-xs text-slate-500">
@@ -470,7 +471,11 @@ function ProfileInformation() {
               disabled={isLoading}
               className="rounded-xl bg-blue-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isLoading ? 'Saving...' : 'Save Changes'}
+              {isUploadingPhoto
+                ? 'Uploading Photo...'
+                : isLoading
+                ? 'Saving...'
+                : 'Save Changes'}
             </button>
           </div>
         </div>

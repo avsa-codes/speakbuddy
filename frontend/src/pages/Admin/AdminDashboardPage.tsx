@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { CalendarDays, Clock, Users, Video } from 'lucide-react';
+import { API_URL } from '../../config/api';
 
 type GroupDiscussion = {
   id: string;
@@ -21,7 +22,7 @@ function AdminDashboardPage() {
 
   const fetchDiscussions = useCallback(async () => {
     const response = await fetch(
-      'http://localhost:5000/api/group-discussions/admin',
+      `${API_URL}/api/group-discussions/admin`,
       { credentials: 'include' }
     );
 
@@ -67,7 +68,7 @@ function AdminDashboardPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/group-discussions/${groupDiscussionId}/${action}`,
+        `${API_URL}/api/group-discussions/${groupDiscussionId}/${action}`,
         {
           method: 'POST',
           credentials: 'include',

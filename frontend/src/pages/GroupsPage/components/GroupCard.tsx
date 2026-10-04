@@ -2,7 +2,7 @@ import { ArrowRight, Users } from 'lucide-react';
 import type { Group } from '../../../types/group';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import { API_URL } from '../../../config/api';
 
 function GroupCard({ group }: { group: Group }) {
 
@@ -17,7 +17,7 @@ function GroupCard({ group }: { group: Group }) {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/group-discussions/${group.id}/reserve`,
+        `${API_URL}/api/group-discussions/${group.id}/reserve`,
         {
           method: 'POST',
           credentials: 'include',
@@ -38,7 +38,7 @@ function GroupCard({ group }: { group: Group }) {
   useEffect( () => {
     const fetchReservationStatus = async () => {
       const response = await fetch(
-        `http://localhost:5000/api/group-discussions/${group.id}/reservation`,
+        `${API_URL}/api/group-discussions/${group.id}/reservation`,
         {
          credentials: 'include'
         }

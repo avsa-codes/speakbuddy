@@ -4,7 +4,7 @@ import GroupCard from './components/GroupCard';
 import type { Group } from '../../types/group';
 import MobileHeader from '../../components/MobileHeader';
 import { useEffect, useState } from 'react';
-
+import { API_URL } from '../../config/api';
 
 function GroupsPage() {
 
@@ -14,7 +14,7 @@ function GroupsPage() {
   useEffect(() => {
     const fetchGroups = async () => {
       const response = await fetch(
-        'http://localhost:5000/api/group-discussions',
+        `${API_URL}/api/group-discussions`,
         {
           credentials: 'include',
         }

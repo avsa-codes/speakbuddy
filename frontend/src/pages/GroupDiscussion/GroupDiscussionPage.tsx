@@ -11,7 +11,7 @@ import {
   X,
   Maximize2,
 } from 'lucide-react';
-
+import { API_URL } from '../../config/api';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { socket } from '../../socket/socket';
@@ -76,7 +76,7 @@ function GroupDiscussionPage() {
     const fetchDiscussion = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/api/group-discussions/${groupDiscussionId}`,
+          `${API_URL}/api/group-discussions/${groupDiscussionId}`,
           { credentials: 'include' }
         );
 

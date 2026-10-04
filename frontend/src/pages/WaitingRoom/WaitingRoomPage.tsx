@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { socket } from '../../socket/socket';
+import { API_URL } from '../../config/api';
 
 function WaitingRoomPage() {
   const { groupDiscussionId } = useParams();
@@ -19,7 +20,7 @@ const handleJoinSession = async () => {
 
   try {
     const response = await fetch(
-      `http://localhost:5000/api/group-discussions/${groupDiscussionId}/join`,
+      `${API_URL}/api/group-discussions/${groupDiscussionId}/join`,
       {
         method: 'POST',
         credentials: 'include',
@@ -66,7 +67,7 @@ const handleJoinSession = async () => {
     const validateWaitingRoom = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/api/group-discussions/${groupDiscussionId}/waiting-room`,
+          `${API_URL}/api/group-discussions/${groupDiscussionId}/waiting-room`,
           {
             credentials: 'include',
           }

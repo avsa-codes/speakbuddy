@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { socket } from '../../../socket/socket';
+import { API_URL } from '../../../config/api';
 
 type Message = {
   id: string;
@@ -51,7 +52,7 @@ export default function ChatPanel({ partnerId, conversationId }: ChatPanelProps)
 
     async function fetchPartner() {
       const response = await fetch(
-        `http://localhost:5000/api/users/${partnerId}`,
+        `${API_URL}/api/users/${partnerId}`,
         {
           credentials: 'include',
         }

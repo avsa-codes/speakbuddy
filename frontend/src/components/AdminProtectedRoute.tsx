@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-
+import { API_URL } from '../config/api';
 function AdminProtectedRoute() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -8,10 +8,9 @@ function AdminProtectedRoute() {
   useEffect(() => {
     const checkAdminAuth = async () => {
       try {
-        const response = await fetch(
-          'http://localhost:5000/api/group-discussions/admin',
-          { credentials: 'include' }
-        );
+        const response = await fetch(`${API_URL}/api/group-discussions/admin`, {
+          credentials: 'include',
+        });
 
         setIsAdmin(response.ok);
       } catch {

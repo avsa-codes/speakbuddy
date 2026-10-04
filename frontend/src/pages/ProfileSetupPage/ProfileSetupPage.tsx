@@ -2,6 +2,7 @@ import { Navbar } from '../../components/Navbar';
 import { useAuth } from '../../context/AuthContext';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_URL } from '../../config/api';
 
 function ProfileSetupPage() {
   const { currentUser, checkAuth } = useAuth();
@@ -52,7 +53,7 @@ const navigate = useNavigate();
       const formData = new FormData();
       formData.append('profilePhoto', selectedPhoto);
 
-      const response = await fetch('http://localhost:5000/api/users/me/photo', {
+      const response = await fetch(`${API_URL}/api/users/me/photo`, {
         method: 'PATCH',
         credentials: 'include',
         body: formData,
@@ -88,7 +89,7 @@ const navigate = useNavigate();
         languageProficiency,
         interests,
       });
-      const response = await fetch('http://localhost:5000/api/users/me', {
+      const response = await fetch(`${API_URL}/api/users/me`, {
         method: 'PATCH',
         credentials: 'include',
         headers: {
@@ -185,6 +186,10 @@ useEffect(() => {
               Tell us a little about yourself so you can start connecting.
             </p>
           </div>
+
+          {error && <p className="text-sm text-red-400">{error}</p>}
+
+          {success && <p className="text-sm text-emerald-400">{success}</p>}
 
           <form
             onSubmit={handleSaveProfile}

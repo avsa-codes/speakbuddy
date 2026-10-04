@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { User } from '../types/user';
 import { socket } from '../socket/socket';
+import { API_URL } from '../config/api';
 
 type AuthContextType = {
   currentUser: User | null;
@@ -25,7 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function checkAuth() {
     try {
-      const response = await fetch('http://localhost:5000/api/auth/me', {
+      const response = await fetch(`${API_URL}/api/auth/me`, {
         method: 'GET',
         credentials: 'include',
       });
@@ -66,7 +67,7 @@ useEffect(() => {
 
   const refreshInterval = setInterval(async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/auth/refresh', {
+      const response = await fetch(`${API_URL}/api/auth/refresh`, {
         method: 'POST',
         credentials: 'include',
       });
@@ -85,7 +86,7 @@ useEffect(() => {
 }, [currentUser, isLoading]);
 
   async function login(email: string, password: string) {
-    const response = await fetch('http://localhost:5000/api/auth/login', {
+    const response = await fetch(`${API_URL}/api/auth/login`, {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -112,7 +113,7 @@ useEffect(() => {
     email: string,
     password: string
   ) {
-    const response = await fetch('http://localhost:5000/api/auth/register', {
+    const response = await fetch(`${API_URL}/api/auth/register`, {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -136,7 +137,7 @@ useEffect(() => {
   }
 
   async function logout() {
-    const response = await fetch('http://localhost:5000/api/auth/logout', {
+    const response = await fetch(`${API_URL}/api/auth/logout`, {
       method: 'POST',
       credentials: 'include',
       headers: {

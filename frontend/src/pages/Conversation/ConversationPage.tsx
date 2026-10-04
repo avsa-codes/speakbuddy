@@ -7,6 +7,7 @@ import ChatPanel from './components/ChatPanel';
 import { useEffect, useState } from 'react';
 import { socket } from '../../socket/socket';
 import type { User } from '../../types/user';
+import { API_URL } from '../../config/api';
 
 type Topic = {
   id: string,
@@ -77,7 +78,7 @@ export default function ConversationPage() {
 
   useEffect(() => {
     async function fetchTopics() {
-      const response = await fetch('http://localhost:5000/api/topics', {
+      const response = await fetch(`${API_URL}/api/topics`, {
         credentials: 'include',
       });
 
@@ -116,7 +117,7 @@ useEffect(() => {
 
   async function fetchMatchedUser() {
     const response = await fetch(
-      `http://localhost:5000/api/users/${matchedUserId}`,
+      `${API_URL}/api/users/${matchedUserId}`,
       {
         credentials: 'include',
       }

@@ -40,6 +40,8 @@ function LoginPage() {
     try {
       await login(email, password);
 
+      setSuccess("Login Successful.");
+
       navigate('/home');
     } catch (error) {
       setError(
