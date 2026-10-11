@@ -22,19 +22,18 @@ export default function ConversationHeader({
   isLive = false,
 }: ConversationHeaderProps) {
   return (
-    <header className="flex min-h-[78px] items-center gap-4 rounded-2xl border border-blue-500/40 bg-[#0b142b] px-4 py-3 sm:px-5">
-      {/* Back */}
-      <button
-        type="button"
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-2xl text-white transition hover:bg-white/5"
-        aria-label="Go back"
-      >
-        ←
-      </button>
+    <header className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl border border-blue-500/40 bg-[#0b142b] px-3 py-3 sm:min-h-[78px] sm:px-5 sm:py-4">
+      {/* Back button and partner */}
+      <div className="flex min-w-0 flex-1 basis-[220px] items-center gap-2 sm:gap-3">
+        <button
+          type="button"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-2xl text-white transition hover:bg-white/5 sm:h-10 sm:w-10"
+          aria-label="Go back"
+        >
+          ←
+        </button>
 
-      {/* Partner */}
-      <div className="flex min-w-0 items-center gap-3">
-        <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full border border-blue-400/30 bg-indigo-500/20">
+        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full border border-blue-400/30 bg-indigo-500/20 sm:h-11 sm:w-11">
           {partnerPhoto ? (
             <img
               src={partnerPhoto}
@@ -42,7 +41,7 @@ export default function ConversationHeader({
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-lg font-semibold text-indigo-300">
+            <div className="flex h-full w-full items-center justify-center text-base font-semibold text-indigo-300 sm:text-lg">
               {partnerName.charAt(0).toUpperCase()}
             </div>
           )}
@@ -50,23 +49,40 @@ export default function ConversationHeader({
 
         <div className="min-w-0">
           <p className="text-xs text-slate-400">Partner</p>
-          <p className="truncate text-base font-semibold text-white">
+          <p className="truncate text-sm font-semibold text-white sm:text-base">
             {partnerName}
           </p>
         </div>
       </div>
 
-      {/* Divider */}
-      <div className="hidden h-10 w-px bg-blue-400/20 sm:block" />
+      {/* Status */}
+      <div className="order-2 ml-auto flex shrink-0 items-center gap-2 sm:order-3 sm:gap-3">
+        {isLive && (
+          <div className="flex items-center gap-2 rounded-lg border border-blue-400/20 bg-blue-500/10 px-2 py-1.5 sm:px-3 sm:py-2">
+            <span className="h-2 w-2 rounded-full bg-red-500" />
+            <span className="text-xs text-white sm:text-sm">Live</span>
+          </div>
+        )}
 
-      {/* Topic */}
-      <div className="hidden min-w-0 sm:block">
-        <p className="text-xs text-slate-400">Practice: Topic</p>
+        <span className="text-xs tabular-nums text-slate-300 sm:text-sm">
+          00:00:00
+        </span>
+      </div>
+
+      {/* Topic selector: visible on mobile and desktop */}
+      <div className="order-3 w-full min-w-0 sm:order-2 sm:w-auto sm:flex-1">
+        <label
+          htmlFor="conversation-topic"
+          className="mb-1 block text-xs text-slate-400"
+        >
+          Practice topic
+        </label>
 
         <select
+          id="conversation-topic"
           value={selectedTopicId}
           onChange={(event) => onTopicChange(event.target.value)}
-          className="mt-1 rounded-full border border-blue-400/20 bg-[#101b36] px-3 py-2 text-sm text-white outline-none [color-scheme:dark]"
+          className="w-full min-w-0 rounded-xl border border-blue-400/25 bg-[#101b36] px-3 py-2.5 text-sm text-white outline-none transition focus:border-indigo-500 [color-scheme:dark] sm:max-w-[320px] sm:rounded-full"
         >
           <option value="">Select a topic</option>
 
@@ -80,20 +96,6 @@ export default function ConversationHeader({
             </option>
           ))}
         </select>
-      </div>
-
-      {/* Status */}
-      <div className="ml-auto flex shrink-0 items-center gap-3">
-        {isLive && (
-          <div className="flex items-center gap-2 rounded-lg border border-blue-400/20 bg-blue-500/10 px-3 py-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
-            <span className="hidden text-sm text-white sm:inline">Live</span>
-          </div>
-        )}
-
-        <span className="hidden text-sm text-slate-300 md:inline">
-          00:00:00
-        </span>
       </div>
     </header>
   );

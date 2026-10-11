@@ -12,6 +12,7 @@
   "dependencies": {
     "@aws-sdk/s3-request-presigner": "^3.1134.0",
     "@tailwindcss/vite": "^4.3.3",
+    "agora-rtc-sdk-ng": "^4.24.8",
     "lucide-react": "^1.45.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
