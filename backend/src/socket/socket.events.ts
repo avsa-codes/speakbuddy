@@ -7,6 +7,7 @@ import { getMatchScore } from "./matching.utils.js";
 import { endGroupDiscussion } from "../services/groupDiscussion.service.js";
 import { db } from "../prisma/db.js";
 import { leaveGroupDiscussion } from "../services/groupDiscussion.service.js";
+import pendingCalls from "./call.registry.js";
 
 export const registerSocketEvents = (io: Server, socket: Socket) => {
   const userId = socket.data.userId;
@@ -166,6 +167,7 @@ waitingUsers.set(userId, {
     }
 
     io.to(`user:${partnerUserId}`).emit("conversation:ended");
+    socket.emit("conversation:ended");
   });
 
   socket.on("conversation:recover", () => {
@@ -338,6 +340,171 @@ waitingUsers.set(userId, {
       console.error("Failed to handle group participant disconnect:", error);
     }
   });
+
+  //Video/Audio Implementation
+
+     
+  socket.on(
+    "call:invite",
+    async (data: { conversationId: string; callType: "audio" | "video" }) => {
+      try {
+        const { conversationId, callType } = data;
+
+        if (!conversationId || !["audio", "video"].includes(callType)) {
+          socket.emit("call:error", {
+            message: "Invalid call invitation.",
+          });
+          return;
+        }
+
+        const conversation = await db.orm.public.Conversation.where({
+          id: conversationId,
+        }).first();
+
+        if (
+          !conversation ||
+          (conversation.user1Id !== userId && conversation.user2Id !== userId)
+        ) {
+          socket.emit("call:error", {
+            message: "You are not authorized to call in this conversation.",
+          });
+          return;
+        }
+
+        if (conversation.status !== "ACTIVE") {
+          socket.emit("call:error", {
+            message: "Only active conversations can start calls.",
+          });
+          return;
+        }
+
+        const receiverId =
+          conversation.user1Id === userId
+            ? conversation.user2Id
+            : conversation.user1Id;
+
+        pendingCalls.set(conversationId, {
+          conversationId,
+          callerId: userId,
+          receiverId,
+          callType,
+        });    
+
+        io.to(`user:${receiverId}`).emit("call:incoming", {
+          conversationId,
+          callerId: userId,
+          callType,
+        });
+      } catch (error) {
+        console.error("Call invitation failed:", error);
+
+        socket.emit("call:error", {
+          message: "Unable to send call invitation.",
+        });
+      }
+    },
+  );
+
+
+  socket.on("call:accept", async (data: { conversationId: string }) => {
+    const { conversationId } = data;
+
+    if (!conversationId) {
+      socket.emit("call:error", {
+        message: "Conversation ID is required.",
+      });
+      return;
+    }
+
+    const pendingCall = pendingCalls.get(conversationId);
+
+    if (!pendingCall || pendingCall.receiverId !== userId) {
+      socket.emit("call:error", {
+        message: "No valid incoming call found.",
+      });
+      return;
+    }
+
+    const conversation = await db.orm.public.Conversation.where({
+      id: conversationId,
+    }).first();
+
+    if (
+      !conversation ||
+      conversation.status !== "ACTIVE" ||
+      (conversation.user1Id !== userId && conversation.user2Id !== userId)
+    ) {
+      pendingCalls.delete(conversationId);
+
+      socket.emit("call:error", {
+        message: "This conversation is no longer available.",
+      });
+      return;
+    }
+
+    pendingCalls.delete(conversationId);
+
+    const acceptedData = {
+      conversationId,
+      acceptedBy: userId,
+      callType: pendingCall.callType,
+    };
+
+    // Notify the caller
+    io.to(`user:${pendingCall.callerId}`).emit("call:accepted", acceptedData);
+
+    // Confirm acceptance to the recipient
+    socket.emit("call:accepted", acceptedData);
+  });
+
+
+
+
+socket.on("call:reject", async (data: { conversationId: string }) => {
+  const { conversationId } = data;
+
+  if (!conversationId) {
+    socket.emit("call:error", {
+      message: "Conversation ID is required.",
+    });
+    return;
+  }
+
+  const pendingCall = pendingCalls.get(conversationId);
+
+  if (!pendingCall || pendingCall.receiverId !== userId) {
+    socket.emit("call:error", {
+      message: "No valid incoming call found.",
+    });
+    return;
+  }
+
+  const conversation = await db.orm.public.Conversation.where({
+    id: conversationId,
+  }).first();
+
+  if (
+    !conversation ||
+    conversation.status !== "ACTIVE" ||
+    (conversation.user1Id !== userId && conversation.user2Id !== userId)
+  ) {
+    pendingCalls.delete(conversationId);
+
+    socket.emit("call:error", {
+      message: "This conversation is no longer available.",
+    });
+    return;
+  }
+
+  pendingCalls.delete(conversationId);
+
+  io.to(`user:${pendingCall.callerId}`).emit("call:rejected", {
+    conversationId,
+    rejectedBy: userId,
+    callType: pendingCall.callType,
+  });
+});
+
 };
 
 

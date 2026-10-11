@@ -1,0 +1,995 @@
+[
+  {
+    "id": "table.groupReservation",
+    "label": "Create table \"groupReservation\"",
+    "summary": "Creates table \"groupReservation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "groupReservation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"groupReservation\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"groupReservation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"groupReservation\"",
+        "sql": "CREATE TABLE \"public\".\"groupReservation\" (\n  \"cancelledAt\" timestamptz,\n  \"confirmedAt\" timestamptz,\n  \"groupDiscussionId\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"reservedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"status\" text NOT NULL,\n  \"userId\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"groupReservation_status_check_6d3a3bcb\" CHECK (\"status\" IN ('RESERVED', 'CONFIRMED', 'CANCELLED', 'EXPIRED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"groupReservation\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"groupReservation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.groupDiscussion.scheduledStartAt",
+    "label": "Add column \"scheduledStartAt\" to \"groupDiscussion\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "scheduledStartAt",
+        "table": "groupDiscussion"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"scheduledStartAt\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "groupDiscussion",
+          "scheduledStartAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"scheduledStartAt\"",
+        "sql": "ALTER TABLE \"public\".\"groupDiscussion\" ADD COLUMN \"scheduledStartAt\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"scheduledStartAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "groupDiscussion",
+          "scheduledStartAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.user.agoraUid",
+    "label": "Add column \"agoraUid\" to \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "agoraUid",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"agoraUid\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "agoraUid"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"agoraUid\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD COLUMN \"agoraUid\" SERIAL NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"agoraUid\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "agoraUid"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.user.profilePhoto",
+    "label": "Add column \"profilePhoto\" to \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "profilePhoto",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"profilePhoto\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "profilePhoto"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"profilePhoto\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD COLUMN \"profilePhoto\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"profilePhoto\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "profilePhoto"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.conversation.conversation_duration_non_negative_check_d99cb446",
+    "label": "Add check constraint \"conversation_duration_non_negative_check_d99cb446\" on \"conversation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "conversation_duration_non_negative_check_d99cb446",
+        "table": "conversation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"conversation_duration_non_negative_check_d99cb446\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "conversation_duration_non_negative_check_d99cb446",
+          "public",
+          "\"public\".\"conversation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"conversation_duration_non_negative_check_d99cb446\"",
+        "sql": "ALTER TABLE \"public\".\"conversation\" ADD CONSTRAINT \"conversation_duration_non_negative_check_d99cb446\" CHECK (duration >= 0)"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"conversation_duration_non_negative_check_d99cb446\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "conversation_duration_non_negative_check_d99cb446",
+          "public",
+          "\"public\".\"conversation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.conversation.conversation_no_self_conversation_check_19b24f66",
+    "label": "Add check constraint \"conversation_no_self_conversation_check_19b24f66\" on \"conversation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "conversation_no_self_conversation_check_19b24f66",
+        "table": "conversation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"conversation_no_self_conversation_check_19b24f66\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "conversation_no_self_conversation_check_19b24f66",
+          "public",
+          "\"public\".\"conversation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"conversation_no_self_conversation_check_19b24f66\"",
+        "sql": "ALTER TABLE \"public\".\"conversation\" ADD CONSTRAINT \"conversation_no_self_conversation_check_19b24f66\" CHECK (\"user1Id\" <> \"user2Id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"conversation_no_self_conversation_check_19b24f66\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "conversation_no_self_conversation_check_19b24f66",
+          "public",
+          "\"public\".\"conversation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.conversation.conversation_valid_time_range_check_3308ff50",
+    "label": "Add check constraint \"conversation_valid_time_range_check_3308ff50\" on \"conversation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "conversation_valid_time_range_check_3308ff50",
+        "table": "conversation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"conversation_valid_time_range_check_3308ff50\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "conversation_valid_time_range_check_3308ff50",
+          "public",
+          "\"public\".\"conversation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"conversation_valid_time_range_check_3308ff50\"",
+        "sql": "ALTER TABLE \"public\".\"conversation\" ADD CONSTRAINT \"conversation_valid_time_range_check_3308ff50\" CHECK (\"endedAt\" >= \"startedAt\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"conversation_valid_time_range_check_3308ff50\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "conversation_valid_time_range_check_3308ff50",
+          "public",
+          "\"public\".\"conversation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.groupDiscussion.group_discussion_duration_non_negative_check_d99cb446",
+    "label": "Add check constraint \"group_discussion_duration_non_negative_check_d99cb446\" on \"groupDiscussion\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "group_discussion_duration_non_negative_check_d99cb446",
+        "table": "groupDiscussion"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"group_discussion_duration_non_negative_check_d99cb446\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "group_discussion_duration_non_negative_check_d99cb446",
+          "public",
+          "\"public\".\"groupDiscussion\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"group_discussion_duration_non_negative_check_d99cb446\"",
+        "sql": "ALTER TABLE \"public\".\"groupDiscussion\" ADD CONSTRAINT \"group_discussion_duration_non_negative_check_d99cb446\" CHECK (duration >= 0)"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"group_discussion_duration_non_negative_check_d99cb446\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "group_discussion_duration_non_negative_check_d99cb446",
+          "public",
+          "\"public\".\"groupDiscussion\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.groupDiscussion.group_discussion_max_participants_positive_check_b7b64f10",
+    "label": "Add check constraint \"group_discussion_max_participants_positive_check_b7b64f10\" on \"groupDiscussion\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "group_discussion_max_participants_positive_check_b7b64f10",
+        "table": "groupDiscussion"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"group_discussion_max_participants_positive_check_b7b64f10\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "group_discussion_max_participants_positive_check_b7b64f10",
+          "public",
+          "\"public\".\"groupDiscussion\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"group_discussion_max_participants_positive_check_b7b64f10\"",
+        "sql": "ALTER TABLE \"public\".\"groupDiscussion\" ADD CONSTRAINT \"group_discussion_max_participants_positive_check_b7b64f10\" CHECK (\"maxParticipants\" > 0)"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"group_discussion_max_participants_positive_check_b7b64f10\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "group_discussion_max_participants_positive_check_b7b64f10",
+          "public",
+          "\"public\".\"groupDiscussion\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.groupDiscussion.group_discussion_valid_time_range_check_3308ff50",
+    "label": "Add check constraint \"group_discussion_valid_time_range_check_3308ff50\" on \"groupDiscussion\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "group_discussion_valid_time_range_check_3308ff50",
+        "table": "groupDiscussion"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"group_discussion_valid_time_range_check_3308ff50\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "group_discussion_valid_time_range_check_3308ff50",
+          "public",
+          "\"public\".\"groupDiscussion\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"group_discussion_valid_time_range_check_3308ff50\"",
+        "sql": "ALTER TABLE \"public\".\"groupDiscussion\" ADD CONSTRAINT \"group_discussion_valid_time_range_check_3308ff50\" CHECK (\"endedAt\" >= \"startedAt\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"group_discussion_valid_time_range_check_3308ff50\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "group_discussion_valid_time_range_check_3308ff50",
+          "public",
+          "\"public\".\"groupDiscussion\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.groupParticipant.group_participant_valid_time_range_check_85679688",
+    "label": "Add check constraint \"group_participant_valid_time_range_check_85679688\" on \"groupParticipant\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "group_participant_valid_time_range_check_85679688",
+        "table": "groupParticipant"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"group_participant_valid_time_range_check_85679688\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "group_participant_valid_time_range_check_85679688",
+          "public",
+          "\"public\".\"groupParticipant\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"group_participant_valid_time_range_check_85679688\"",
+        "sql": "ALTER TABLE \"public\".\"groupParticipant\" ADD CONSTRAINT \"group_participant_valid_time_range_check_85679688\" CHECK (\"leftAt\" >= \"joinedAt\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"group_participant_valid_time_range_check_85679688\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "group_participant_valid_time_range_check_85679688",
+          "public",
+          "\"public\".\"groupParticipant\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.groupReservation.groupReservation_userId_groupDiscussionId_key",
+    "label": "Add unique constraint on \"groupReservation\" (userId, groupDiscussionId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "groupReservation_userId_groupDiscussionId_key",
+        "table": "groupReservation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"groupReservation_userId_groupDiscussionId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "groupReservation_userId_groupDiscussionId_key",
+          "public",
+          "\"public\".\"groupReservation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"groupReservation_userId_groupDiscussionId_key\"",
+        "sql": "ALTER TABLE \"public\".\"groupReservation\" ADD CONSTRAINT \"groupReservation_userId_groupDiscussionId_key\" UNIQUE (\"userId\", \"groupDiscussionId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"groupReservation_userId_groupDiscussionId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "groupReservation_userId_groupDiscussionId_key",
+          "public",
+          "\"public\".\"groupReservation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.rating.rating_no_self_rating_check_0ea4c0dd",
+    "label": "Add check constraint \"rating_no_self_rating_check_0ea4c0dd\" on \"rating\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "rating_no_self_rating_check_0ea4c0dd",
+        "table": "rating"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"rating_no_self_rating_check_0ea4c0dd\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "rating_no_self_rating_check_0ea4c0dd",
+          "public",
+          "\"public\".\"rating\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"rating_no_self_rating_check_0ea4c0dd\"",
+        "sql": "ALTER TABLE \"public\".\"rating\" ADD CONSTRAINT \"rating_no_self_rating_check_0ea4c0dd\" CHECK (\"reviewerId\" <> \"reviewedUserId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"rating_no_self_rating_check_0ea4c0dd\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "rating_no_self_rating_check_0ea4c0dd",
+          "public",
+          "\"public\".\"rating\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.rating.rating_rating_range_check_a517f074",
+    "label": "Add check constraint \"rating_rating_range_check_a517f074\" on \"rating\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "rating_rating_range_check_a517f074",
+        "table": "rating"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"rating_rating_range_check_a517f074\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "rating_rating_range_check_a517f074",
+          "public",
+          "\"public\".\"rating\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"rating_rating_range_check_a517f074\"",
+        "sql": "ALTER TABLE \"public\".\"rating\" ADD CONSTRAINT \"rating_rating_range_check_a517f074\" CHECK (rating >= 1 AND rating <= 5)"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"rating_rating_range_check_a517f074\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "rating_rating_range_check_a517f074",
+          "public",
+          "\"public\".\"rating\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.rating.rating_reviewerId_reviewedUserId_key",
+    "label": "Add unique constraint on \"rating\" (reviewerId, reviewedUserId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "rating_reviewerId_reviewedUserId_key",
+        "table": "rating"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"rating_reviewerId_reviewedUserId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "rating_reviewerId_reviewedUserId_key",
+          "public",
+          "\"public\".\"rating\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"rating_reviewerId_reviewedUserId_key\"",
+        "sql": "ALTER TABLE \"public\".\"rating\" ADD CONSTRAINT \"rating_reviewerId_reviewedUserId_key\" UNIQUE (\"reviewerId\", \"reviewedUserId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"rating_reviewerId_reviewedUserId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "rating_reviewerId_reviewedUserId_key",
+          "public",
+          "\"public\".\"rating\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.user.user_rating_range_check_4dac77a4",
+    "label": "Add check constraint \"user_rating_range_check_4dac77a4\" on \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "user_rating_range_check_4dac77a4",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"user_rating_range_check_4dac77a4\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_rating_range_check_4dac77a4",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"user_rating_range_check_4dac77a4\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD CONSTRAINT \"user_rating_range_check_4dac77a4\" CHECK (rating >= 0 AND rating <= 5)"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"user_rating_range_check_4dac77a4\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_rating_range_check_4dac77a4",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.user.user_total_ratings_non_negative_check_9b4f1fed",
+    "label": "Add check constraint \"user_total_ratings_non_negative_check_9b4f1fed\" on \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "user_total_ratings_non_negative_check_9b4f1fed",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"user_total_ratings_non_negative_check_9b4f1fed\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_total_ratings_non_negative_check_9b4f1fed",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"user_total_ratings_non_negative_check_9b4f1fed\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD CONSTRAINT \"user_total_ratings_non_negative_check_9b4f1fed\" CHECK (\"totalRatings\" >= 0)"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"user_total_ratings_non_negative_check_9b4f1fed\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_total_ratings_non_negative_check_9b4f1fed",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.user.user_agoraUid_key",
+    "label": "Add unique constraint on \"user\" (agoraUid)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "user_agoraUid_key",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"user_agoraUid_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_agoraUid_key",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"user_agoraUid_key\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD CONSTRAINT \"user_agoraUid_key\" UNIQUE (\"agoraUid\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"user_agoraUid_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_agoraUid_key",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.groupDiscussion.groupDiscussion_scheduledStartAt_idx_16bf47c9",
+    "label": "Create index \"groupDiscussion_scheduledStartAt_idx_16bf47c9\" on \"groupDiscussion\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "groupDiscussion_scheduledStartAt_idx_16bf47c9",
+        "table": "groupDiscussion"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"groupDiscussion_scheduledStartAt_idx_16bf47c9\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"groupDiscussion_scheduledStartAt_idx_16bf47c9\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"groupDiscussion_scheduledStartAt_idx_16bf47c9\"",
+        "sql": "CREATE INDEX \"groupDiscussion_scheduledStartAt_idx_16bf47c9\" ON \"public\".\"groupDiscussion\" (\"scheduledStartAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"groupDiscussion_scheduledStartAt_idx_16bf47c9\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"groupDiscussion_scheduledStartAt_idx_16bf47c9\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.groupReservation.groupReservation_groupDiscussionId_idx_772d1f81",
+    "label": "Create index \"groupReservation_groupDiscussionId_idx_772d1f81\" on \"groupReservation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "groupReservation_groupDiscussionId_idx_772d1f81",
+        "table": "groupReservation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"groupReservation_groupDiscussionId_idx_772d1f81\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"groupReservation_groupDiscussionId_idx_772d1f81\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"groupReservation_groupDiscussionId_idx_772d1f81\"",
+        "sql": "CREATE INDEX \"groupReservation_groupDiscussionId_idx_772d1f81\" ON \"public\".\"groupReservation\" (\"groupDiscussionId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"groupReservation_groupDiscussionId_idx_772d1f81\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"groupReservation_groupDiscussionId_idx_772d1f81\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.groupReservation.groupReservation_status_idx_e98638ab",
+    "label": "Create index \"groupReservation_status_idx_e98638ab\" on \"groupReservation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "groupReservation_status_idx_e98638ab",
+        "table": "groupReservation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"groupReservation_status_idx_e98638ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"groupReservation_status_idx_e98638ab\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"groupReservation_status_idx_e98638ab\"",
+        "sql": "CREATE INDEX \"groupReservation_status_idx_e98638ab\" ON \"public\".\"groupReservation\" (\"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"groupReservation_status_idx_e98638ab\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"groupReservation_status_idx_e98638ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.groupReservation.groupReservation_userId_idx_a489d58a",
+    "label": "Create index \"groupReservation_userId_idx_a489d58a\" on \"groupReservation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "groupReservation_userId_idx_a489d58a",
+        "table": "groupReservation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"groupReservation_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"groupReservation_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"groupReservation_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"groupReservation_userId_idx_a489d58a\" ON \"public\".\"groupReservation\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"groupReservation_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"groupReservation_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.groupReservation.groupReservation_userId_fkey",
+    "label": "Add foreign key \"groupReservation_userId_fkey\" on \"groupReservation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "groupReservation_userId_fkey",
+        "table": "groupReservation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"groupReservation_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "groupReservation_userId_fkey",
+          "public",
+          "\"public\".\"groupReservation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"groupReservation_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"groupReservation\"\nADD CONSTRAINT \"groupReservation_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"user\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"groupReservation_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "groupReservation_userId_fkey",
+          "public",
+          "\"public\".\"groupReservation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.groupReservation.groupReservation_groupDiscussionId_fkey",
+    "label": "Add foreign key \"groupReservation_groupDiscussionId_fkey\" on \"groupReservation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "groupReservation_groupDiscussionId_fkey",
+        "table": "groupReservation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"groupReservation_groupDiscussionId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "groupReservation_groupDiscussionId_fkey",
+          "public",
+          "\"public\".\"groupReservation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"groupReservation_groupDiscussionId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"groupReservation\"\nADD CONSTRAINT \"groupReservation_groupDiscussionId_fkey\"\nFOREIGN KEY (\"groupDiscussionId\")\nREFERENCES \"public\".\"groupDiscussion\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"groupReservation_groupDiscussionId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "groupReservation_groupDiscussionId_fkey",
+          "public",
+          "\"public\".\"groupReservation\""
+        ]
+      }
+    ]
+  }
+]

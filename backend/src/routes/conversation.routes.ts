@@ -5,8 +5,5 @@ const router = Router();
 
 router.post('/conversations', createConversation);
 
-// router.get('/conversations/:id');
-
-// router.patch("/conversations/:id");
 
 export default router;

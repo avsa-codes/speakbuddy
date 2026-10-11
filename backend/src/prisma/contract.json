@@ -822,6 +822,13 @@
           },
           "User": {
             "fields": {
+              "agoraUid": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "bio": {
                 "nullable": true,
                 "type": {
@@ -1029,6 +1036,9 @@
             },
             "storage": {
               "fields": {
+                "agoraUid": {
+                  "column": "agoraUid"
+                },
                 "bio": {
                   "column": "bio"
                 },
@@ -1810,6 +1820,15 @@
                 }
               ],
               "columns": {
+                "agoraUid": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
                 "bio": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -1923,6 +1942,11 @@
               "uniques": [
                 {
                   "columns": [
+                    "agoraUid"
+                  ]
+                },
+                {
+                  "columns": [
                     "email"
                   ]
                 },
@@ -1970,7 +1994,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "308a21fa409ef92c5fbd783fe118bfe505d11b3c9fd3dc09cb9fafdf4b883ff0"
+    "storageHash": "1eac60839d8bf480c5d6069398f890139c9f491ab549accd9d47ceed0692c87d"
   },
   "execution": {
     "executionHash": "85435f1d509feb4b0acede1f5955bc886b580ad213cfcb4cda5cea5f3dace1b1",

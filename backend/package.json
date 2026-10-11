@@ -41,6 +41,7 @@
     "@aws-sdk/s3-request-presigner": "^3.1134.0",
     "@prisma/client": "^7.10.0",
     "@prisma/orm-postgres": "^8.0.0-rc.8",
+    "agora-access-token": "^2.0.4",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",

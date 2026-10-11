@@ -10,6 +10,7 @@ import topicRoutes from "./routes/topic.routes.js";
 import conversationRoutes from "./routes/conversation.routes.js";
 import ratingRoutes from "./routes/rating.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+import callRoutes from "./routes/call.routes.js"
 import { errorHandler } from "./middleware/error.middleware.js";
 import { createGroupDiscussionRouter } from "./routes/groupDiscussion.routes.js";
 
@@ -47,6 +48,7 @@ app.use("/api", topicRoutes);
 app.use("/api", conversationRoutes);
 app.use("/api", ratingRoutes);
 app.use("/api", adminRoutes);
+app.use("/api", callRoutes);
 
 app.use("/api/group-discussions", createGroupDiscussionRouter(io));
 
