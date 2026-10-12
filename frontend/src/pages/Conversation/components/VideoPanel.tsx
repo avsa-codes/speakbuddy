@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { IAgoraRTCRemoteUser } from 'agora-rtc-sdk-ng';
+
 
 import {
   getLocalVideoTrack,

@@ -4,11 +4,12 @@ import ConversationHeader from './components/ConversationHeader';
 import VideoPanel from './components/VideoPanel';
 import CallControls from './components/CallControls';
 import ChatPanel from './components/ChatPanel';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { socket } from '../../socket/socket';
 import type { User } from '../../types/user';
 import { API_URL } from '../../config/api';
-import { useAuth } from '../../context/AuthContext';
+import RatingModal from './components/RatingModal';
+
 
 import {
   joinAgoraCall,
@@ -47,7 +48,17 @@ export default function ConversationPage() {
   const [acceptedCallType, setAcceptedCallType] = useState<
     'audio' | 'video' | null
   >(null);
-  const { currentUser } = useAuth();
+
+  const [ratingTarget, setRatingTarget] = useState<User | null>(null);
+
+  const matchedUserRef = useRef<User | null>(null);
+  const matchedUserIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    matchedUserRef.current = matchedUser;
+    matchedUserIdRef.current = matchedUserId;
+  }, [matchedUser, matchedUserId]);
+
 
   const handleMicClick = async () => {
     try {
@@ -57,25 +68,49 @@ export default function ConversationPage() {
     }
   };
 
-  useEffect(() => {
 
-const handleConversationEnded = () => {
-  void leaveAgoraCall().catch((error) => {
-    console.error('Failed to leave Agora call:', error);
-  });
+useEffect(() => {
+  const handleConversationEnded = async () => {
+    const partner = matchedUserRef.current;
+    const partnerId = matchedUserIdRef.current;
 
-  setCallState('idle');
-  setMatchedUser(null);
-  setMatchedUserId(null);
-  setConversationId(null);
-  setAcceptedCallType(null);
-};
-    socket.on('conversation:ended', handleConversationEnded);
+    void leaveAgoraCall().catch((error) => {
+      console.error('Failed to leave Agora call:', error);
+    });
 
-    return () => {
-      socket.off('conversation:ended', handleConversationEnded);
-    };
-  }, []);
+    // Preserve the partner before clearing conversation state.
+    if (partner) {
+      setRatingTarget(partner);
+    } else if (partnerId) {
+      // The partner's profile might not have loaded yet.
+      try {
+        const response = await fetch(`${API_URL}/api/users/${partnerId}`, {
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setRatingTarget(data.data);
+        }
+      } catch (error) {
+        console.error('Failed to load rating recipient:', error);
+      }
+    }
+
+    setCallState('idle');
+    setMatchedUser(null);
+    setMatchedUserId(null);
+    setConversationId(null);
+    setAcceptedCallType(null);
+  };
+
+  socket.on('conversation:ended', handleConversationEnded);
+
+  return () => {
+    socket.off('conversation:ended', handleConversationEnded);
+  };
+}, []);
+
 
   useEffect(() => {
     const handleConversationRecovered = (data: { partnerUserId: string }) => {
@@ -205,15 +240,13 @@ const handleCameraClick = () => {
       return;
     }
 
-    if (callState === 'active') {
-      socket.emit('conversation:end', {
-        conversationId,
-      });
+if (callState === 'active') {
+  if (!conversationId) return;
 
-      setCallState('idle');
-      setMatchedUserId(null);
-      setMatchedUser(null);
-    }
+  socket.emit('conversation:end', {
+    conversationId,
+  });
+}
   };
 
   //audio + video implementation 
@@ -275,6 +308,29 @@ useEffect(() => {
       socket.off('call:rejected', handleCallRejected);
     };
   }, [conversationId]);
+
+  
+const handleRatingSubmit = async (rating: number) => {
+  if (!ratingTarget) return;
+
+  const response = await fetch(`${API_URL}/api/ratings/${ratingTarget.id}`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ rating }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message ?? 'Failed to submit rating.');
+  }
+
+  setRatingTarget(null);
+};
+
 
 
   return (
@@ -356,6 +412,14 @@ useEffect(() => {
             </div>
           </div>
         </div>
+      )}
+
+      {ratingTarget && (
+        <RatingModal
+          user={ratingTarget}
+          onSubmit={handleRatingSubmit}
+          onClose={() => setRatingTarget(null)}
+        />
       )}
     </main>
   );

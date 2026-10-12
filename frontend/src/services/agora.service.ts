@@ -3,7 +3,6 @@ import type {
   IAgoraRTCRemoteUser,
   ILocalAudioTrack,
   ILocalVideoTrack,
-  UID,
 } from 'agora-rtc-sdk-ng';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 
@@ -28,7 +27,7 @@ let localAudioTrack: ILocalAudioTrack | null = null;
 let localVideoTrack: ILocalVideoTrack | null = null;
 let onLocalVideoTrackReady: (() => void) | null = null;
 let isJoiningAgoraCall = false;
-let currentConversationId: string | null = null;
+
 
 // onLocalVideoTrackReady stores a callback function.
 // onLocalVideoReady() lets another file register that callback.

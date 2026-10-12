@@ -5,13 +5,13 @@ export const addRating = async (data: {
   reviewedUserId: string;
   rating: number;
 }) => {
-  const result = await db.transaction(async (tx) => {
+  return db.transaction(async (tx) => {
     const user = await tx.orm.public.User.where({
       id: data.reviewedUserId,
     }).first();
 
     if (!user) {
-      throw new Error("USER_NOT_FOUND");
+      return { error: "USER_NOT_FOUND" as const };
     }
 
     const createRating = await tx.orm.public.Rating.create({
@@ -40,6 +40,4 @@ export const addRating = async (data: {
       updatedUser,
     };
   });
-
-  return result;
 };
