@@ -14,13 +14,13 @@ import AdminProtectedRoute from './components/AdminProtectedRoute';
 import './socket/socket';
 import ConversationPage from './pages/Conversation/ConversationPage';
 import GroupDiscussionPage from './pages/GroupDiscussion/GroupDiscussionPage';
-
+import InstallAppPrompt from './components/InstallAppPrompt';
 
 function App() {
-
-
   return (
     <BrowserRouter>
+      <InstallAppPrompt />
+
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<LandingPage />} />
@@ -55,5 +55,3 @@ function App() {
 }
 
 export default App;
-
-

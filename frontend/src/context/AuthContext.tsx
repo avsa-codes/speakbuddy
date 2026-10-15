@@ -25,22 +25,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   async function checkAuth() {
+    
     try {
-      const response = await fetch(`${API_URL}/api/auth/me`, {
+      let response = await fetch(`${API_URL}/api/auth/me`, {
         method: 'GET',
         credentials: 'include',
       });
 
-      const data = await response.json();
-      
+      // If the access token is invalid or expired,
+      // try using the seven-day refresh token.
+      if (response.status === 401) {
+        const refreshResponse = await fetch(`${API_URL}/api/auth/refresh`, {
+          method: 'POST',
+          credentials: 'include',
+        });
+
+        if (refreshResponse.ok) {
+          // The backend should now have set a new access token.
+          response = await fetch(`${API_URL}/api/auth/me`, {
+            method: 'GET',
+            credentials: 'include',
+          });
+        }
+      }
 
       if (!response.ok) {
         setCurrentUser(null);
         return;
       }
 
+      const data = await response.json();
       setCurrentUser(data.data);
+      console.log('AUTH RESTORED:', data.data.username);
     } catch (error) {
+      console.error('Authentication check failed:', error);
       setCurrentUser(null);
     } finally {
       setIsLoading(false);
@@ -54,36 +72,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       socket.disconnect();
     }
 
-    return () => { //cleanup function
+    return () => {
+      //cleanup function
       socket.disconnect();
     };
   }, [currentUser]);
 
-  
-useEffect(() => {
-  if (!currentUser || isLoading) {
-    return;
-  }
-
-  const refreshInterval = setInterval(async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/auth/refresh`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-
-      if (response.status === 401) {
-        setCurrentUser(null);
-      }
-    } catch (error) {
-      console.error('Token refresh failed:', error);
+  useEffect(() => {
+    if (!currentUser || isLoading) {
+      return;
     }
-  }, 50 * 60 * 1000);
 
-  return () => {
-    clearInterval(refreshInterval);
-  };
-}, [currentUser, isLoading]);
+    const refreshInterval = setInterval(async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/auth/refresh`, {
+          method: 'POST',
+          credentials: 'include',
+        });
+
+        if (response.status === 401) {
+          setCurrentUser(null);
+        }
+      } catch (error) {
+        console.error('Token refresh failed:', error);
+      }
+    }, 50 * 60 * 1000);
+
+    return () => {
+      clearInterval(refreshInterval);
+    };
+  }, [currentUser, isLoading]);
 
   async function login(email: string, password: string) {
     const response = await fetch(`${API_URL}/api/auth/login`, {

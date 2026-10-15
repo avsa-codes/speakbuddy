@@ -2,7 +2,6 @@ import Sidebar from '../../components/Sidebar';
 import MobileNavigation from '../../components/MobileNavigation';
 import { useAuth } from '../../context/AuthContext';
 import StartConversationCard from './components/StartConversationCard';
-import RecentConversations from './components/RecentConversations';
 import ActivityStats from './components/ActivityStats';
 import MobileHeader from '../../components/MobileHeader';
 
@@ -10,29 +9,28 @@ function HomePage() {
   const { currentUser } = useAuth();
 
   return (
-    <main className="min-h-screen bg-[#070B1A] text-white lg:flex">
+    <main className="min-h-screen overflow-x-hidden bg-[#070B1A] text-white lg:flex">
       <Sidebar />
 
       <div className="min-w-0 flex-1">
         <MobileHeader />
-        <div className="px-5 pb-28 pt-10 sm:px-6 sm:pb-28 sm:pt-14">
+
+        <div className="px-4 pb-28 pt-8 sm:px-6 sm:pb-28 sm:pt-12 lg:px-10 lg:py-12">
           <section className="mx-auto w-full max-w-7xl">
-            <div className="text-center sm:text-left">
+            <header className="mb-7 sm:mb-9">
               <p className="text-sm font-medium text-blue-400">Welcome back</p>
 
               <h1 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
-                {currentUser?.name || 'there'} 👋
+                {currentUser?.name || 'there'}{' '}
+                <span aria-hidden="true">👋</span>
               </h1>
 
-              <p className="mt-3 text-base leading-6 text-slate-400 sm:text-lg">
-                Ready for your next conversation?
+              <p className="mt-2 text-sm leading-6 text-slate-400 sm:text-base">
+                Ready to practise your English today?
               </p>
-            </div>
+            </header>
 
-            <div className="mt-10 grid gap-6 lg:grid-cols-[1.5fr_1fr]">
-              <StartConversationCard />
-              <RecentConversations />
-            </div>
+            <StartConversationCard />
 
             <ActivityStats />
           </section>

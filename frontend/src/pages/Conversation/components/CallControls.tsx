@@ -14,11 +14,11 @@ export default function CallControls({
   onMicClick,
 }: CallControlsProps) {
   return (
-    <section className="mt-4 flex items-center justify-center gap-3 rounded-2xl border border-blue-500/40 bg-[#0b142b] p-4 sm:gap-5">
+    <section className="flex shrink-0 items-center justify-center gap-2 rounded-2xl border border-blue-500/25 bg-[#0b142b] p-2 sm:gap-4 sm:p-4">
       <button
         type="button"
         onClick={onCameraClick}
-        className="flex h-14 w-14 items-center justify-center rounded-xl border border-blue-400/30 bg-slate-800/70 text-xl transition hover:bg-slate-700"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-blue-400/25 bg-slate-800/70 text-lg transition hover:bg-slate-700 sm:h-14 sm:w-14 sm:text-xl"
         aria-label="Toggle camera"
       >
         📹
@@ -27,7 +27,7 @@ export default function CallControls({
       <button
         type="button"
         onClick={onMicClick}
-        className="flex h-14 w-14 items-center justify-center rounded-xl border border-blue-400/30 bg-slate-800/70 text-xl transition hover:bg-slate-700"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-blue-400/25 bg-slate-800/70 text-lg transition hover:bg-slate-700 sm:h-14 sm:w-14 sm:text-xl"
         aria-label="Toggle microphone"
       >
         🎤
@@ -35,7 +35,7 @@ export default function CallControls({
 
       <button
         type="button"
-        className="flex h-14 w-14 items-center justify-center rounded-xl border border-blue-400/30 bg-slate-800/70 text-xl transition hover:bg-slate-700"
+        className="hidden h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-blue-400/25 bg-slate-800/70 text-xl transition hover:bg-slate-700 sm:flex"
         aria-label="Share screen"
       >
         🖥️
@@ -43,7 +43,7 @@ export default function CallControls({
 
       <button
         type="button"
-        className="flex h-14 w-14 items-center justify-center rounded-xl border border-blue-400/30 bg-slate-800/70 text-xl transition hover:bg-slate-700"
+        className="hidden h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-blue-400/25 bg-slate-800/70 text-xl transition hover:bg-slate-700 sm:flex"
         aria-label="Raise hand"
       >
         ✋
@@ -52,7 +52,7 @@ export default function CallControls({
       <button
         type="button"
         onClick={onCallAction}
-        className="rounded-xl bg-red-500 px-6 py-3 font-semibold text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+        className="min-w-0 shrink rounded-xl bg-red-500 px-3 py-3 text-xs font-semibold text-white transition hover:bg-red-600 sm:px-6 sm:text-base"
       >
         {callState === 'idle' && 'Start Call'}
         {callState === 'matching' && 'Cancel Match'}

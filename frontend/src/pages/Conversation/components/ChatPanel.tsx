@@ -77,8 +77,6 @@ export default function ChatPanel({
 
   useEffect(() => {
     const handleMessageReceive = (data: { text: string; senderId: string }) => {
-      console.log('Message received:', data);
-
       setMessages((previousMessages) => [
         ...previousMessages,
         {
@@ -101,26 +99,19 @@ export default function ChatPanel({
   }, []);
 
   return (
-    <section className="flex h-[420px] min-h-0 w-full flex-col overflow-hidden rounded-2xl border border-blue-500/30 bg-[#0b142b] shadow-lg shadow-black/10 sm:h-[480px] xl:h-full">
-      {/* Tabs */}
-      <div className="flex shrink-0 border-b border-blue-400/20 bg-[#0d1730]">
-        <button
-          type="button"
-          className="flex-1 border-b-2 border-indigo-500 px-3 py-3 text-sm font-semibold text-indigo-300 transition sm:py-4"
-        >
-          Chat
-        </button>
-
-        <button
-          type="button"
-          className="flex-1 border-b-2 border-transparent px-3 py-3 text-sm text-slate-400 transition hover:text-white sm:py-4"
-        >
-          Participants
-        </button>
+    <section className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-2xl border border-blue-500/20 bg-[#0b142b]">
+      {/* Chat header — no Participants tab */}
+      <div className="flex shrink-0 items-center border-b border-blue-400/15 bg-[#0d1730] px-4 py-3">
+        <div>
+          <h2 className="text-sm font-semibold text-white">Chat</h2>
+          <p className="mt-0.5 text-xs text-slate-500">
+            Message your conversation partner
+          </p>
+        </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain p-3 sm:gap-5 sm:p-4">
+      {/* Only this area scrolls */}
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-x-hidden overflow-y-auto overscroll-contain p-3 sm:p-4">
         {messages.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center px-4 py-8 text-center">
             <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-indigo-400/20 bg-indigo-500/10 text-xl">
@@ -156,7 +147,7 @@ export default function ChatPanel({
               </div>
 
               <div
-                className={`max-w-[88%] break-words rounded-2xl px-3.5 py-2.5 text-sm leading-5 sm:max-w-[85%] sm:px-4 sm:py-3 ${
+                className={`max-w-[88%] break-words [overflow-wrap:anywhere] rounded-2xl px-3.5 py-2.5 text-sm leading-5 sm:max-w-[85%] sm:px-4 sm:py-3 ${
                   item.sender === 'you'
                     ? 'rounded-br-md bg-indigo-600 text-white'
                     : 'rounded-bl-md border border-blue-400/10 bg-[#152342] text-slate-200'
@@ -169,8 +160,8 @@ export default function ChatPanel({
         )}
       </div>
 
-      {/* Message input */}
-      <div className="shrink-0 border-t border-blue-400/20 bg-[#0d1730] p-2.5 sm:p-3">
+      {/* Input stays at the bottom */}
+      <div className="shrink-0 border-t border-blue-400/15 bg-[#0d1730] p-3">
         <form
           className="flex min-w-0 items-center gap-2"
           onSubmit={(event) => {
@@ -184,14 +175,14 @@ export default function ChatPanel({
             onChange={(event) => setMessage(event.target.value)}
             placeholder="Message your partner..."
             autoComplete="off"
-            className="h-11 min-w-0 flex-1 rounded-xl border border-blue-400/20 bg-[#101b36] px-3 text-sm text-white outline-none transition placeholder:text-xs placeholder:text-slate-500 focus:border-indigo-500 sm:px-4 sm:placeholder:text-sm"
+            className="h-11 min-w-0 flex-1 rounded-xl border border-blue-400/15 bg-[#101b36] px-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-indigo-500 sm:px-4"
           />
 
           <button
             type="submit"
             disabled={!message.trim() || !conversationId}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-lg text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-40 sm:rounded-full"
             aria-label="Send message"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-lg text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-40"
           >
             ➤
           </button>

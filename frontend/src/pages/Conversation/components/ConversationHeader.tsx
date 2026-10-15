@@ -11,6 +11,7 @@ type ConversationHeaderProps = {
   selectedTopicId: string;
   onTopicChange: (topicId: string) => void;
   isLive?: boolean;
+  elapsedSeconds: number;
 };
 
 export default function ConversationHeader({
@@ -20,7 +21,22 @@ export default function ConversationHeader({
   selectedTopicId,
   onTopicChange,
   isLive = false,
+  elapsedSeconds
 }: ConversationHeaderProps) {
+
+
+  
+function formatDuration(totalSeconds: number) {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return [hours, minutes, seconds]
+    .map((value) => String(value).padStart(2, '0'))
+    .join(':');
+}
+
+
   return (
     <header className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl border border-blue-500/40 bg-[#0b142b] px-3 py-3 sm:min-h-[78px] sm:px-5 sm:py-4">
       {/* Back button and partner */}
@@ -65,7 +81,7 @@ export default function ConversationHeader({
         )}
 
         <span className="text-xs tabular-nums text-slate-300 sm:text-sm">
-          00:00:00
+          {formatDuration(elapsedSeconds)}
         </span>
       </div>
 

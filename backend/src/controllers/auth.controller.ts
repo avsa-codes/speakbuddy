@@ -129,13 +129,21 @@ export const login = async (
   }
 };
 
+
 export const logout = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
   try {
-    res.clearCookie("token");
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax" as const,
+    };
+
+    res.clearCookie("token", cookieOptions);
+    res.clearCookie("refreshToken", cookieOptions);
 
     res.status(200).json({
       success: true,
@@ -145,6 +153,7 @@ export const logout = async (
     next(error);
   }
 };
+
 
 export const getMe = async (
   req: Request,
