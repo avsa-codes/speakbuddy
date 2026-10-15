@@ -15,6 +15,20 @@ import './socket/socket';
 import ConversationPage from './pages/Conversation/ConversationPage';
 import GroupDiscussionPage from './pages/GroupDiscussion/GroupDiscussionPage';
 import InstallAppPrompt from './components/InstallAppPrompt';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+
+
+function LandingRoute() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return null;
+  }
+
+  return isAuthenticated ? <Navigate to="/home" replace /> : <LandingPage />;
+}
+
 
 function App() {
   return (
@@ -23,7 +37,7 @@ function App() {
 
       <Routes>
         {/* Public routes */}
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<LandingRoute />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 

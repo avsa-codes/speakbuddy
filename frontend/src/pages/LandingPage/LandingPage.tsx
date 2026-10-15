@@ -6,6 +6,7 @@ import { HeroSection } from './components/HeroSection';
 import { HowItWorks } from './components/HowItWorks';
 import LandingMobileNavigation from '../../components/LandingMobileNavigation';
 
+
 function LandingPage() {
   const { isAuthenticated, isLoading } = useAuth();
 

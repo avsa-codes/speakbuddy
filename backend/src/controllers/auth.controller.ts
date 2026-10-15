@@ -101,8 +101,21 @@ export const login = async (
   try {
     const { email, password } = req.body;
 
+    if (
+      typeof email !== "string" ||
+      !email.trim() ||
+      typeof password !== "string" ||
+      !password
+    ) {
+      res.status(400).json({
+        success: false,
+        message: "Email and password are required.",
+      });
+      return;
+    }
+
     const { accessToken, refreshToken } = await userLogin({
-      email,
+      email: email.trim(),
       password,
     });
 
@@ -125,6 +138,14 @@ export const login = async (
       message: "Login successful.",
     });
   } catch (error) {
+    if (error instanceof Error && error.message === "INVALID_CREDENTIALS") {
+      res.status(401).json({
+        success: false,
+        message: "Invalid email or password.",
+      });
+      return;
+    }
+
     next(error);
   }
 };

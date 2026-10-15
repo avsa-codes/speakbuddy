@@ -5,6 +5,7 @@ import StartConversationCard from './components/StartConversationCard';
 import ActivityStats from './components/ActivityStats';
 import MobileHeader from '../../components/MobileHeader';
 
+
 function HomePage() {
   const { currentUser } = useAuth();
 
