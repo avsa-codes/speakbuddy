@@ -11,6 +11,8 @@ import RatingModal from './components/RatingModal';
 import { socket } from '../../socket/socket';
 import type { User } from '../../types/user';
 import { API_URL } from '../../config/api';
+import ConversationTips from './components/ConversationTips';
+
 
 import {
   joinAgoraCall,
@@ -41,6 +43,10 @@ export default function ConversationPage() {
   const [selectedTopicId, setSelectedTopicId] = useState('');
   const [matchedUserId, setMatchedUserId] = useState<string | null>(null);
   const [matchedUser, setMatchedUser] = useState<User | null>(null);
+  const [showCodeOfConduct, setShowCodeOfConduct] = useState(true);
+  const [activeTip, setActiveTip] = useState<1 | 2 | 3 | null>(null);
+  const [dismissedTips, setDismissedTips] = useState<number[]>([]);
+  const [autoEndTriggered, setAutoEndTriggered] = useState(false);
 
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
@@ -178,7 +184,9 @@ export default function ConversationPage() {
 
       setMatchedUserId(data.matchedUserId);
       setConversationId(data.conversationId);
+      setAutoEndTriggered(false);
       setCallState('active');
+      
 
       try {
         await joinAgoraCall(data.conversationId);
@@ -368,8 +376,95 @@ export default function ConversationPage() {
     return () => window.clearInterval(interval);
   }, [callState]);
 
+  useEffect(() => {
+    if (callState !== 'active') {
+      setActiveTip(null);
+      setDismissedTips([]);
+      return;
+    }
+
+    if (elapsedSeconds >= 480 && !dismissedTips.includes(3)) {
+      setActiveTip(3);
+    } else if (elapsedSeconds >= 240 && !dismissedTips.includes(2)) {
+      setActiveTip(2);
+    } else if (elapsedSeconds >= 60 && !dismissedTips.includes(1)) {
+      setActiveTip(1);
+    } else {
+      setActiveTip(null);
+    }
+  }, [callState, elapsedSeconds, dismissedTips]);
+
+  useEffect(() => {
+    if (callState !== 'active' || elapsedSeconds < 600 || autoEndTriggered) {
+      return;
+    }
+
+    setAutoEndTriggered(true);
+    handleCallAction();
+  }, [callState, elapsedSeconds, autoEndTriggered]);
+
+
   return (
     <main className="flex h-dvh overflow-hidden bg-[#070B1A] text-white">
+      {activeTip !== null && (
+        <ConversationTips
+          stage={activeTip}
+          onDismiss={() => {
+            setDismissedTips((previous) => [...previous, activeTip]);
+            setActiveTip(null);
+          }}
+        />
+      )}
+
+      {showCodeOfConduct && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#171720] p-5 text-white shadow-2xl">
+            <h2 className="text-lg font-semibold tracking-tight">
+              Welcome to SpeakBuddy! 👋
+            </h2>
+
+            <p className="mt-2 text-sm leading-5 text-gray-400">
+              Before you start talking, please agree to our community rules to
+              keep this a safe, respectful space to practice English:
+            </p>
+
+            <div className="mt-4 space-y-3">
+              <p className="text-sm leading-5 text-gray-300">
+                🚫 <strong className="text-white">Be Respectful:</strong> No
+                bullying, insults, hate speech, or discrimination.
+              </p>
+
+              <p className="text-sm leading-5 text-gray-300">
+                🛑 <strong className="text-white">Stay Appropriate:</strong> No
+                unwanted personal questions or sexual remarks.
+              </p>
+
+              <p className="text-sm leading-5 text-gray-300">
+                🔒 <strong className="text-white">Protect Privacy:</strong> Do
+                not share or pressure others for personal contact info.
+              </p>
+
+              <p className="text-sm leading-5 text-gray-300">
+                🎓 <strong className="text-white">Support Learners:</strong> Be
+                patient with mistakes. Listen without judgment.
+              </p>
+            </div>
+
+            <p className="mt-4 border-t border-white/10 pt-3 text-xs text-gray-400">
+              <em>Violations will lead to a temporary or permanent ban.</em>
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setShowCodeOfConduct(false)}
+              className="mt-4 w-full rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-500"
+            >
+              I understand — Start conversation
+            </button>
+          </div>
+        </div>
+      )}
+
       <Sidebar />
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
@@ -393,9 +488,48 @@ export default function ConversationPage() {
 
             {/* Video and controls occupy the remaining height. */}
             <div className="relative mt-3 flex min-h-0 flex-1 gap-3 overflow-hidden sm:mt-4 sm:gap-4">
-              <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 overflow-hidden sm:gap-4">
-                <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
-                  <VideoPanel />
+              <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-hidden sm:gap-3">
+                <div className="min-h-0 min-w-0 flex-1 overflow-hidden rounded-2xl">
+                  {callState === 'matching' ? (
+                    <div className="flex h-full flex-col items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br from-[#111a35] via-[#111329] to-[#21143b] px-6 text-center">
+                      <div className="relative mb-8 flex h-24 w-24 items-center justify-center">
+                        <div className="absolute inset-0 animate-ping rounded-full bg-violet-500/10" />
+                        <div className="absolute inset-2 animate-pulse rounded-full border border-violet-400/30" />
+                        <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 shadow-lg shadow-violet-950/50">
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.6"
+                            className="h-8 w-8 text-white"
+                            aria-hidden="true"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2m6-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm10-3v6m3-3h-6"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+
+                      <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+                        Finding your conversation partner
+                      </h2>
+
+                      <p className="mt-3 max-w-md text-sm leading-6 text-slate-400 sm:text-base">
+                        Looking for someone to practise English with. Your next
+                        conversation could be just around the corner.
+                      </p>
+
+                      <div className="mt-7 flex items-center gap-2 text-sm text-violet-300">
+                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-violet-400" />
+                        Finding your match
+                      </div>
+                    </div>
+                  ) : (
+                    <VideoPanel />
+                  )}
                 </div>
 
                 <div className="shrink-0">

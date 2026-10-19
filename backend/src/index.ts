@@ -60,6 +60,13 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
+// Live connection count
+app.get("/api/stats/connections", (_req, res) => {
+  res.json({
+    count: io.sockets.sockets.size,
+  });
+});
+
 // 4. Error Handling Middleware
 app.use(errorHandler);
 

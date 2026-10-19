@@ -10,12 +10,23 @@ import { leaveGroupDiscussion } from "../services/groupDiscussion.service.js";
 import pendingCalls from "./call.registry.js";
 
 export const registerSocketEvents = (io: Server, socket: Socket) => {
+
+
   const userId = socket.data.userId;
 
-  socket.join(`user:${userId}`);
+  const broadcastConnectionCount = () => {
+    const count = [...io.sockets.sockets.values()].filter((connectedSocket) =>
+      Boolean(connectedSocket.data.userId),
+    ).length;
 
-  console.log(`User ${userId} connected via socket ${socket.id}`);
-  console.log(`User ${userId} joined room: user:${userId}`);
+    io.emit("connections:count", count);
+  };
+
+  socket.join(`user:${userId}`);
+  broadcastConnectionCount();
+
+  // console.log(`User ${userId} connected via socket ${socket.id}`);
+  // console.log(`User ${userId} joined room: user:${userId}`);
 
   io.to(`user:${userId}`).emit("socket:ready", {
     message: "Socket connection established",
@@ -325,21 +336,23 @@ waitingUsers.set(userId, {
 
   });
 
-  socket.on("disconnect", async () => {
-    const groupDiscussionId = socket.data.groupDiscussionId;
+socket.on("disconnect", async () => {
+  broadcastConnectionCount();
 
-    if (!groupDiscussionId) return;
+  const groupDiscussionId = socket.data.groupDiscussionId;
 
-    try {
-      await leaveGroupDiscussion(groupDiscussionId, userId);
+  if (!groupDiscussionId) return;
 
-      socket.to(`group:${groupDiscussionId}`).emit("group:participant-left", {
-        userId,
-      });
-    } catch (error) {
-      console.error("Failed to handle group participant disconnect:", error);
-    }
-  });
+  try {
+    await leaveGroupDiscussion(groupDiscussionId, userId);
+
+    socket.to(`group:${groupDiscussionId}`).emit("group:participant-left", {
+      userId,
+    });
+  } catch (error) {
+    console.error("Failed to handle group participant disconnect:", error);
+  }
+});
 
   //Video/Audio Implementation
 

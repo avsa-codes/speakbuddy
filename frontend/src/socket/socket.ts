@@ -21,3 +21,7 @@ socket.on('connect_error', (error) => {
 socket.on('socket:ready', (data) => {
   console.log('Socket ready:', data.message);
 });
+
+socket.on('connections:count', (count: number) => {
+  console.log('Live connections:', count);
+});

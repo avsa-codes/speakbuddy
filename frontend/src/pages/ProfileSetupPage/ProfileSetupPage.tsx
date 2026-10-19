@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../../config/api';
+import TermsAndConditions from './components/TermsAndConditions';
 
 function ProfileSetupPage() {
   const { currentUser, checkAuth } = useAuth();
@@ -16,6 +17,8 @@ const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [isProficiencyOpen, setIsProficiencyOpen] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(
@@ -23,6 +26,7 @@ const navigate = useNavigate();
   );
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
 
   const proficiencyOptions = [
     { value: 'BEGINNER', label: 'Beginner' },
@@ -415,22 +419,50 @@ useEffect(() => {
                 </div>
               </div>
             </div>
-            <div className="mt-8 border-t border-white/10 pt-8 text-center">
-              <button
-                type="submit"
-                disabled={isLoading || isUploadingPhoto}
-                className="rounded-xl bg-blue-500 px-8 py-3 font-semibold text-white transition hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isUploadingPhoto
-                  ? 'Uploading Photo...'
-                  : isLoading
-                  ? 'Saving...'
-                  : 'Save Profile'}
-              </button>
+
+            <div className="mt-8 border-t border-white/10 pt-8">
+              <label className="flex items-start gap-3 text-sm text-slate-300">
+                <input
+                  type="checkbox"
+                  checked={hasAcceptedTerms}
+                  onChange={(e) => setHasAcceptedTerms(e.target.checked)}
+                  className="mt-1 h-4 w-4 shrink-0 accent-blue-500"
+                />
+
+                <span>
+                  I agree to the{' '}
+                  <button
+                    type="button"
+                    onClick={() => setIsTermsOpen(true)}
+                    className="font-medium text-blue-400 underline underline-offset-4 hover:text-blue-300"
+                  >
+                    Terms & Conditions
+                  </button>
+                  .
+                </span>
+              </label>
+
+              <div className="mt-6 text-center">
+                <button
+                  type="submit"
+                  disabled={!hasAcceptedTerms || isLoading || isUploadingPhoto}
+                  className="rounded-xl bg-blue-500 px-8 py-3 font-semibold text-white transition hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isUploadingPhoto
+                    ? 'Uploading Photo...'
+                    : isLoading
+                    ? 'Saving...'
+                    : 'Save Profile'}
+                </button>
+              </div>
             </div>
           </form>
         </section>
       </div>
+
+      {isTermsOpen && (
+        <TermsAndConditions onClose={() => setIsTermsOpen(false)} />
+      )}
     </main>
   );
 }
